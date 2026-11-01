@@ -23,7 +23,7 @@ La interfaz tiene perfil de jefe con nivel y experiencia, contadores de fondos (
 |---|---|---|
 | Moverse | WASD o flechas | Arrastrar el dedo |
 | Dar el alto o dar órdenes | E | Tocar a la persona |
-| Centro de mando | E en la comisaría | Botón «Centro de mando» |
+| Centro de mando (flota, agentes, operaciones…) | Menú lateral | Menú lateral |
 | Misiones | M | Pestaña «Misiones» |
 | Plantilla | P | Pestaña «Plantilla» |
 | Entrar o salir de Mi Comisaría | E en la plaza de la comisaría | Menú «Mi Comisaría» / «Salir a patrullar» |
