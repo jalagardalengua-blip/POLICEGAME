@@ -6,10 +6,28 @@ No hay niveles: el mapa es la península entera y se juega de forma continua.
 
 ## Pantallas
 
-- **Mi Comisaría (3D)**: la pantalla principal. Edificio, coches patrulla con sirenas que se reflejan en el suelo mojado, helicóptero, bandera de España y tu plantilla en la puerta. Cambia con el día, el atardecer, la noche y la lluvia, y crece cuando amplías la comisaría.
-- **Patrulla (mapa)**: vista cenital de toda España para salir a la calle, perseguir, dar el alto y viajar entre ciudades.
+| Pantalla | Qué hay |
+|---|---|
+| **Mapa de España** | Escudos de cada comisaría (azul: tuya; gris: por abrir; rojo: misión), avisos por ciudad, ficha con «Entrar», «Volar» o «Marcar ruta», panel de misión actual, tiempo y hora |
+| **Mi Comisaría (3D)** | Edificio, coches de tu flota con sirenas que se reflejan en el suelo mojado, helicóptero, bandera, plantilla en la puerta. Tarjetas de garaje, interrogatorio y calabozos con mantenimiento diario |
+| **Patrulla (3D)** | Conduces o caminas por la ciudad con cámara detrás, velocímetro, radio, sirena, cambio de vehículo, flechas y pedal táctiles. Fuera de las ciudades pasa al mapa de carreteras |
+| **Interrogatorio (3D)** | Sala con mesa, pruebas, lámpara y espejo. El sospechoso reacciona (niega, confiesa, calla, se asusta) y su abogado aparece cuando llega. Nivel de cooperación y respuestas posibles |
+| **Calabozos (3D)** | Pasillo con celdas y presos. Lista de detenidos con horas, pruebas y abogado; botones para pasar al juez, interrogar o liberar |
+| **Tienda / Garaje** | Patrullas (compacto, berlina, todoterreno), furgonetas, motos, helicóptero y drones con imágenes 3D. Cada vehículo cambia el juego |
 
-La interfaz tiene perfil de jefe con nivel y experiencia, contadores de fondos (€), reputación e inteligencia, menú lateral, tarjetas de garaje, interrogatorio y calabozos, minimapa con zoom y barra de acciones rápidas (desplegar unidades, sanción, arrestar, refuerzos y helicóptero).
+La interfaz tiene perfil de jefe con nivel y experiencia, contadores de fondos (€), reputación e inteligencia, menú lateral, minimapa con zoom y acciones rápidas (desplegar unidades, sanción, arrestar, refuerzos y helicóptero).
+
+### Vehículos
+
+| Vehículo | Efecto |
+|---|---|
+| Patrullas | Tus agentes llegan antes a los avisos (cuanto mejor el modelo, más rápidos) |
+| Furgoneta de intervención | +2 plazas de calabozo y en los registros los sospechosos huyen más despacio |
+| Moto | El agente que la lleva es el más rápido de la ciudad |
+| Helicóptero | Viajes instantáneos entre comisarías y necesario para la operación final |
+| Dron | Los avisos de esa ciudad duran más y detectas indicios desde más lejos |
+
+Cada día se pagan las nóminas y el mantenimiento de la flota.
 
 ## Cómo jugar
 
@@ -27,6 +45,10 @@ La interfaz tiene perfil de jefe con nivel y experiencia, contadores de fondos (
 | Misiones | M | Pestaña «Misiones» |
 | Plantilla | P | Pestaña «Plantilla» |
 | Entrar o salir de Mi Comisaría | E en la plaza de la comisaría | Menú «Mi Comisaría» / «Salir a patrullar» |
+| Conducir en 3D | W/S acelerar y frenar, A/D girar | Flechas y pedal en pantalla, o arrastrar |
+| Subir o bajar del coche | C | «Cambiar vehículo» |
+| Vista 3D o mapa | V | «Vista 2D / 3D» |
+| Volver atrás | Esc | Botón «Volver» o «Finalizar» |
 
 En la ciudad vas a pie, por carretera en coche patrulla y en el mar en patrullera (si tienes la Unidad marítima).
 
@@ -48,7 +70,7 @@ index.html              Página del juego
 css/style.css           Interfaz (HUD, paneles, fichas)
 js/data.js              Contenido: geografía, ciudades, autovías, misiones, personal, delitos
 js/game.js              Motor: simulación, IA, mapa 2D, interfaz
-js/hub3d.js             Escena 3D de «Mi Comisaría» (Three.js)
+js/hub3d.js             Motor 3D: comisaría, interrogatorio, calabozos, calle y miniaturas (Three.js)
 js/icons.js             Iconos e ilustraciones SVG
 js/vendor/three.min.js  Three.js r128 (licencia MIT, ver THREE-LICENSE.txt)
 docs/DISENO.md          Documento de diseño y hoja de ruta

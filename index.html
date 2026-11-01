@@ -45,24 +45,25 @@
   <div class="status" id="status"></div>
 
   <nav class="side" id="side">
+    <button data-go="map"><span class="ic" data-ico="map"></span><div><b>Mapa de España</b><span>Ciudades y misiones</span></div></button>
     <button data-go="hub" class="on"><span class="ic" data-ico="emblem"></span><div><b>Mi Comisaría</b><span>Panel principal</span></div></button>
-    <button data-go="per"><span class="ic" data-ico="car"></span><div><b>Flota</b><span>Comprar patrullas</span></div></button>
+    <button data-go="shop"><span class="ic" data-ico="cart"></span><div><b>Tienda</b><span>Vehículos y garaje</span></div></button>
     <button data-go="pla"><span class="ic" data-ico="people"></span><div><b>Agentes</b><span>Plantilla y órdenes</span></div></button>
     <button data-go="com"><span class="ic" data-ico="building"></span><div><b>Comisarías</b><span>Gestionar ciudades</span></div></button>
     <button data-go="est"><span class="ic" data-ico="chart"></span><div><b>Estadísticas</b><span>Ver informes</span></div></button>
     <button data-go="mis"><span class="ic" data-ico="cup"></span><div><b>Misiones</b><span>Completar objetivos</span></div><i class="badge" id="misN" hidden>0</i></button>
-    <button data-go="det"><span class="ic" data-ico="star"></span><div><b>Operaciones</b><span>Detenidos y juzgado</span></div></button>
+    <button data-go="cells"><span class="ic" data-ico="bars"></span><div><b>Calabozos</b><span>Detenidos y juzgado</span></div></button>
   </nav>
 
   <aside class="cards" id="cards">
     <section class="card"><h4><span class="ic" data-ico="car"></span>Garaje de patrullas</h4>
-      <div class="cb"><div class="art" data-art="garage"><button class="blue" data-go="per">Gestionar flota ›</button></div>
-      <div class="meta"><div>Patrullas activas<b id="cCars">0 / 0</b></div><div>Agentes<b id="cAg">0</b></div></div></div></section>
+      <div class="cb"><div class="art" data-art="garage"><button class="blue" data-go="shop">Gestionar flota ›</button></div>
+      <div class="meta"><div>Patrullas disponibles<b id="cCars">0 / 0</b></div><div>Agentes en servicio<b id="cAg">0</b></div><div>Mantenimiento<b id="cCost">0 €/día</b></div></div></div></section>
     <section class="card"><h4><span class="ic" data-ico="chat"></span>Interrogatorio</h4>
-      <div class="cb"><div class="art" data-art="interro"><button class="blue" data-go="det">Interrogar ›</button></div>
+      <div class="cb"><div class="art" data-art="interro"><button class="blue" data-go="interro">Interrogar ›</button></div>
       <div class="meta"><div>Con abogado<b id="cLaw">0</b></div><div>Pruebas medias<b id="cEv">—</b></div></div></div></section>
     <section class="card"><h4><span class="ic" data-ico="bars"></span>Calabozos</h4>
-      <div class="cb"><div class="art" data-art="cell"><button class="blue" data-go="det">Gestionar ›</button></div>
+      <div class="cb"><div class="art" data-art="cell"><button class="blue" data-go="cells">Gestionar ›</button></div>
       <div class="meta"><div><span class="ic" data-ico="coin"></span>Capacidad<b id="cCap">0 / 8</b></div><div>Plazo más cercano<b id="cH">—</b></div></div></div></section>
   </aside>
 
@@ -85,7 +86,51 @@
     <button class="go" id="bPatrol">Salir a patrullar ›</button>
   </div>
   <div id="hint"></div>
+
+  <!-- patrulla -->
+  <div class="drive" id="drive">
+    <div class="patcard"><span class="ic" data-ico="car"></span><div><b>Patrulla en curso…</b><span id="patZone">Zona: —</span><span id="patInfo"></span></div></div>
+    <div class="speedo"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="rgba(8,14,30,.85)" stroke="#2c4a8a" stroke-width="3"/>
+      <path d="M24 92A50 50 0 1 1 96 92" fill="none" stroke="#1d3466" stroke-width="9" stroke-linecap="round"/>
+      <path id="speedArc" d="M24 92A50 50 0 1 1 96 92" fill="none" stroke="url(#spg)" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 400"/>
+      <defs><linearGradient id="spg" x1="0" x2="1"><stop offset="0" stop-color="#3d8bff"/><stop offset=".7" stop-color="#7fd0ff"/><stop offset="1" stop-color="#ff3b4e"/></linearGradient></defs></svg>
+      <b id="speedN">0</b><small>km/h</small></div>
+    <div class="dbtns">
+      <button id="bRadio"><span class="ic" data-ico="radio"></span><span>Radio</span></button>
+      <button id="bSiren"><span class="ic" data-ico="siren"></span><span>Sirena</span></button>
+      <button id="bVeh"><span class="ic" data-ico="car"></span><span>Cambiar vehículo</span></button>
+      <button id="b3d"><span class="ic" data-ico="cam"></span><span id="b3dTxt">Vista 2D</span></button>
+    </div>
+    <div class="steer"><button id="stL" aria-label="Girar a la izquierda">←</button><button id="stR" aria-label="Girar a la derecha">→</button><button id="pedal" aria-label="Acelerar"><span></span></button></div>
+  </div>
+
+  <!-- mapa -->
+  <div class="mapside" id="mapMis"></div>
+  <div class="mapcard" id="mapCard" hidden></div>
+  <div class="wx" id="mapWx"></div>
+
+  <!-- interrogatorio -->
+  <div class="ivui" id="ivUI">
+    <div class="ivhead"><div class="ava" id="ivAva"></div><div><b>Interrogatorio</b><span id="ivName">Sospechoso: —</span></div></div>
+    <div class="ivmenu" id="ivMenu"></div>
+    <div class="ivpanel" id="ivPanel"></div>
+    <div class="bubble" id="ivBubble" hidden></div>
+  </div>
+
+  <!-- calabozos -->
+  <div class="cvui" id="cvUI">
+    <div class="ivhead"><span class="ic" data-ico="bars"></span><div><b>Calabozos</b><span id="cvSub">—</span></div></div>
+    <div class="cvpanel" id="cvPanel"></div>
+  </div>
 </div>
+<canvas id="mapc" hidden></canvas>
+
+<div class="overlay" id="shop" hidden><div class="shop">
+  <header><span class="ic" data-ico="cart"></span><h2>Tienda / Garaje de patrullas</h2><span class="where" id="shopWhere"></span><button id="shopClose">Cerrar</button></header>
+  <nav class="tabs" id="shopTabs"></nav>
+  <div class="shopbody"><div class="vgrid" id="shopGrid"></div>
+    <aside class="fleetbox"><b>Tu flota</b><div class="big" id="fleetN">0 / 0</div><div class="note" id="fleetNote"></div><button class="blue" id="fleetUp">Mejorar flota ›</button></aside></div>
+</div></div>
 <div id="toast"></div>
 
 <div class="overlay" id="panel" hidden><div class="sheet">

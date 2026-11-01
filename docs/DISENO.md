@@ -50,9 +50,12 @@ Escena 3D en tiempo real con cámara sobre el hombro del jefe, al estilo de los 
 ## Hoja de ruta
 - [ ] Sonido: sirenas, radio, ambiente de ciudad y mar
 - [ ] Persecuciones en coche por autovía con controles de carretera
-- [ ] Interior de la comisaría en 3D (sala de interrogatorio, calabozos, oficina)
+- [ ] Oficina y sala de mando en 3D
+- [ ] Tráfico civil en las calles 3D
 - [ ] Modelos 3D más detallados (GLTF) para coches, personajes y edificios
-- [ ] Patrulla en 3D por las calles
+- [x] Patrulla en 3D por las calles
+- [x] Interrogatorio y calabozos en 3D
+- [x] Tienda de vehículos con efectos en el juego
 - [ ] Más ciudades: Valladolid, Salamanca, Santander, Pamplona, Badajoz, Canarias
 - [ ] Rasgos de personalidad en la plantilla (veterano, impulsivo, metódico)
 - [ ] Juicios con testigos y peritos

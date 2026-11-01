@@ -66,7 +66,6 @@ const UPG = {
   k9:{n:'Guía canino y perro',base:1500,k:1.8,max:3,d:'Nuevo personaje con perro. Detecta droga y da indicios legales',g:'p',role:'guia'},
   mar:{n:'Unidad marítima',base:2500,k:1,max:1,d:'Patrulleras: podrás navegar por la costa',g:'p'},
   gei:{n:'Grupo de intervención',base:4000,k:1,max:1,d:'Equipo especial para operaciones de alto riesgo',g:'p'},
-  heli:{n:'Helicóptero',base:6000,k:1,max:1,d:'Viaja al instante entre tus comisarías',g:'p'},
   cel:{n:'Ampliar calabozos',base:200,k:1.7,max:10,d:'+6 plazas de custodia',g:'i'},
   sala:{n:'Sala de interrogatorio',base:300,k:1.8,max:5,d:'+1 turno de preguntas y más colaboración',g:'i'},
   lab:{n:'Laboratorio forense',base:800,k:1.9,max:5,d:'+3 % de pruebas por hora a cada detenido',g:'i'},
@@ -87,6 +86,18 @@ const ROLES = {
     orders:[['oficina','Quedarse en la comisaría'],['seguir','Acompañarme con el perro'],['descanso','Descansar']]},
   jefe:{n:'Jefe de turno',body:'#0f2a5f',hat:'#0a1430',vest:'#ffc94a',color:'#ffc94a',orders:[]},
 };
+// Vehículos de la Tienda (nombres genéricos, sin marcas reales)
+const VEHICLES = [
+  {id:'compacto',cat:'patrulla',n:'Compacto patrulla',price:300,cost:30,sp:1.0,d:'Coche ágil para patrullar la ciudad',model:{len:4.1,h:.95,cab:.78}},
+  {id:'berlina',cat:'patrulla',n:'Berlina patrulla',price:650,cost:40,sp:1.12,d:'Más rápida: los agentes llegan antes a los avisos',model:{len:4.8,h:.88,cab:.72}},
+  {id:'suv',cat:'patrulla',n:'Todoterreno patrulla',price:1100,cost:55,sp:1.2,d:'El más rápido y robusto de los coches',model:{len:4.7,h:1.25,cab:.88,suv:true}},
+  {id:'furgo',cat:'furgoneta',n:'Furgoneta de intervención',price:1500,cost:60,d:'+2 plazas de calabozo y apoyo en los registros (los sospechosos huyen más despacio)'},
+  {id:'moto',cat:'moto',n:'Moto de patrulla',price:400,cost:15,sp:1.25,d:'Un agente en moto se mueve muy rápido por el centro'},
+  {id:'heli',cat:'heli',n:'Helicóptero ligero',price:6000,cost:400,max:1,d:'Viaja al instante entre tus comisarías'},
+  {id:'dron',cat:'dron',n:'Dron de vigilancia',price:800,cost:20,max:3,d:'Los avisos duran más y detectas indicios desde más lejos'},
+];
+const VCATS = [['patrulla','Patrullas'],['furgoneta','Furgonetas'],['moto','Motos'],['heli','Helicópteros'],['dron','Drones']];
+const SALARY = {agente:40,detective:70,analista:60,guia:60,jefe:0};
 const DOGNAMES = ['Rayo','Lola','Thor','Kira','Bruno','Nala','Duke','Sombra'];
 
 const CTYPES = [
@@ -151,11 +162,11 @@ const MIS = [
     {t:'own',city:'barcelona'},{t:'arrest',city:'barcelona',profile:'camello',n:3,txt:'Detén legalmente a 3 vendedores en Barcelona'},
     {t:'warrant',h:2},{t:'raid',city:'barcelona',off:[-200,-120],n:3,txt:'Entrada en el narcopiso'}]},
   {id:'m11',n:'Operación Costa del Sol',zona:'Málaga · Marbella · Algeciras',pre:['m6','m7','m8'],rw:15000,rep:10,d:'Golpe final contra la organización: tres registros simultáneos.',steps:[
-    {t:'up',id:'gei'},{t:'up',id:'heli'},
+    {t:'up',id:'gei'},{t:'veh',cat:'heli'},
     {t:'raid',city:'malaga',off:[-100,-150],n:4,txt:'Registro en Málaga'},
     {t:'raid',city:'marbella',off:[100,-150],n:4,txt:'Registro en Marbella'},
     {t:'raid',city:'algeciras',off:[-150,-120],n:5,txt:'Registro en Algeciras'}]},
 ];
 
-return {POLY,OWNLAND,RIVERS,MOUNTAINS,CITIES,HIGHWAYS,UPG,ROLES,DOGNAMES,CTYPES,PROF,NOMBRES,APELL,LOOKS,ANS,TIPS,MIS};
+return {VEHICLES,VCATS,SALARY,POLY,OWNLAND,RIVERS,MOUNTAINS,CITIES,HIGHWAYS,UPG,ROLES,DOGNAMES,CTYPES,PROF,NOMBRES,APELL,LOOKS,ANS,TIPS,MIS};
 })();
