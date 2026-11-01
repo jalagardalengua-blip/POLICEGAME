@@ -263,7 +263,7 @@ function buildInterro(){
   scene.add(mesh(new THREE.BoxGeometry(.1,2.4,5.2),M({color:0x2a2e36,metalness:.6}),-6.9,2.2,-1.5));
   const ceil=mesh(new THREE.PlaneGeometry(14,12),M({color:0x1a1d24}),0,5,-1,false); ceil.rotation.x=Math.PI/2; scene.add(ceil);
   scene.add(new THREE.HemisphereLight(0x8090b0,0x202020,.3));
-  const spot=new THREE.SpotLight(0xfff1d6,3,14,.75,.55,1.2); spot.position.set(0,3.6,-1); spot.target.position.set(0,.8,-1.1); spot.castShadow=true; spot.shadow.mapSize.set(1024,1024); scene.add(spot,spot.target);
+  const spot=new THREE.SpotLight(0xfff1d6,2,14,.75,.6,1.4); spot.position.set(0,3.6,-1); spot.target.position.set(0,.8,-1.1); spot.castShadow=true; spot.shadow.mapSize.set(1024,1024); scene.add(spot,spot.target);
   const fill=new THREE.PointLight(0x7f9cff,.6,20); fill.position.set(4,3,3); scene.add(fill);
   scene.add(mesh(new THREE.CylinderGeometry(.01,.01,1.2,4),M({color:0x111111}),0,4.4,-1));
   scene.add(mesh(new THREE.ConeGeometry(.45,.35,20,1,true),M({color:0x2b2f36,metalness:.7,roughness:.4,side:THREE.DoubleSide}),0,3.75,-1));
@@ -384,10 +384,10 @@ function streetSync(st){
   const p=st.player, pk=p.mode==='foot'?'me-foot':'me-car';
   const me=entity(pk,()=>p.mode==='foot'?makePerson({body:0x14203f,skin:0xe6b48e,hair:0x2b1b12,vest:0x0c0f16,legs:0x10141f,back:true}):makeCar({len:4.6,h:1.05,cab:.82}));
   place(me,p.x,p.y,p.ang,p.mode==='foot'?'p':'car'); if(p.mode==='foot') animWalk(me,p.walk,p.moving); else if(p.siren) S.sirens.push(me); else sirensOff(me);
-  S.me=me; S.meCar=p.mode!=='foot'; S.pang=p.ang;
+  S.me=me; S.meCar=p.mode!=='foot'; S.pang=p.ang; S.camD=st.camD;
   for(const a of st.actors){ const o=entity('a'+a.id+(a.veh||''),()=>a.veh?vehicleModel(a.veh):makePerson(a.look));
     place(o,a.x,a.y,a.ang,a.veh?'car':'p'); if(a.veh){ if(a.siren) S.sirens.push(o); else sirensOff(o); } else animWalk(o,a.walk,a.moving); }
-  for(const k of (st.cars||[])){ const o=entity('t'+k.id,()=>makeCar({civil:true,color:k.col,len:4.2,h:.9,cab:.75})); place(o,k.x,k.y,k.ang,'car'); }
+  for(const k of (st.cars||[])){ const o=entity('t'+k.id,()=>{ const c=makeCar({civil:true,color:k.col,len:4.2,h:.9,cab:.75}); if(k.flee){ const m=textSprite('¡HUYE!','#fff','rgba(255,59,78,.95)'); m.position.y=3.4; m.material.depthTest=false; m.renderOrder=7; c.add(m); const g=sprite(0xff2a3a,6); g.position.y=1; c.add(g); } return c; }); place(o,k.x,k.y,k.ang,'car'); }
   for(const q of st.peds){ const o=entity('p'+q.id,()=>makePerson({body:q.body,skin:q.skin,hair:q.hair,long:q.long,legs:'#2a3040'})); place(o,q.x,q.y,q.ang,'p'); animWalk(o,q.walk,!q.stopped);
     if(!o.userData.mark){ const s=textSprite('?','#1a1300','rgba(255,201,74,.95)'); s.scale.set(.5,.5,1); s.position.y=2.9; o.add(s); o.userData.mark=s; }
     o.userData.mark.visible=!!q.sus; }
@@ -407,35 +407,54 @@ function streetSync(st){
 function streetTick(dt){
   const S=SC.street; if(!S.me) return;
   const dir=new THREE.Vector3(Math.cos(S.pang),0,Math.sin(S.pang));
-  const D=S.meCar?11:6.5, Hh=S.meCar?4.6:3.1;
+  const Dmax=S.meCar?11:6.5, D=Math.min(Dmax,S.camD||Dmax), Hh=(S.meCar?4.6:3.1)+(Dmax-D)*.45;
   const want=S.me.position.clone().addScaledVector(dir,-D); want.y=Hh;
-  S.camPos.lerp(want,Math.min(1,dt*4)); S.cam.position.copy(S.camPos);
-  const look=S.me.position.clone().addScaledVector(dir,8); look.y=S.meCar?1.6:1.8; S.camLook.lerp(look,Math.min(1,dt*6)); S.cam.lookAt(S.camLook);
+  if(S.camPos.distanceTo(want)>25){ S.camPos.copy(want); S.camLook.copy(S.me.position); } else S.camPos.lerp(want,Math.min(1,dt*4)); S.cam.position.copy(S.camPos);
+  const f=D/Dmax, look=S.me.position.clone().addScaledVector(dir,8*f); look.y=S.meCar?1.4:1.6; S.camLook.lerp(look,Math.min(1,dt*6)); S.cam.lookAt(S.camLook);
   const sp=S.me.position; S.out.sun.position.set(sp.x-60,80,sp.z+40); S.out.sun.target.position.copy(sp);
   const night=S.out.mode!=='day'; S.head.intensity=night&&S.meCar?2.4:0; S.head.position.set(sp.x+dir.x*2,1.4,sp.z+dir.z*2); S.head.target.position.set(sp.x+dir.x*20,0,sp.z+dir.z*20);
   flashSirens(S.sirens,S.out.mode==='day'?.8:1.3);
   S.out.rainTick(dt,sp.x,sp.z); R.toneMappingExposure=S.out.exposure||.8;
 }
 
-// ================= miniaturas de la tienda =================
+// ================= miniaturas e imágenes de estudio =================
 let TR=null, TSc=null; const thumbCache={};
-function thumb(id){
-  if(!ok()) return null; if(thumbCache[id]) return thumbCache[id];
+function makeStation(lvl){
+  const g=new THREE.Group(), W=12+(lvl-1)*3, concrete=M({color:0xc4c9d2,roughness:.8}), navy=M({color:0x13224a,roughness:.5});
+  g.add(mesh(new THREE.BoxGeometry(W,4.4,4.5),concrete,0,2.2,0));
+  const wt=windowTex(); g.add(mesh(new THREE.PlaneGeometry(W-1,2.3),M({map:wt,emissive:0xffffff,emissiveMap:wt,emissiveIntensity:.6,roughness:.1,metalness:.6}),0,1.45,2.26,false));
+  g.add(mesh(new THREE.BoxGeometry(W-.6,1.2,.2),navy,0,3.5,2.3)); const sg=signTex(); g.add(mesh(new THREE.PlaneGeometry(7.5,1.17),M({map:sg,emissive:0xffffff,emissiveMap:sg,emissiveIntensity:.5}),0,3.5,2.41,false));
+  if(lvl>=2) for(const sx of [-1,1]) g.add(mesh(new THREE.BoxGeometry(4,3,4),concrete,sx*(W/2+2),1.5,.2));
+  if(lvl>=3){ const h=makeHeli(); h.scale.setScalar(.35); h.position.set(W/2-2,5.1,0); g.add(h); }
+  const car=makeCar({len:4.4,h:1,cab:.8}); car.scale.setScalar(.55); car.position.set(-3,0,4.2); car.rotation.y=.4; g.add(car); flashSirens([car],.9);
+  const car2=makeCar({len:4.7,h:1.2,cab:.85,suv:true}); car2.scale.setScalar(.55); car2.position.set(3.2,0,4.4); car2.rotation.y=-.5; g.add(car2); flashSirens([car2],.9);
+  for(const x of [-W/2-3,W/2+3]){ const t=makeTree(.55); t.position.set(x,0,1); g.add(t); }
+  return g; }
+function thumb(id,size){
+  if(!ok()) return null; const big=size==='l', key=id+(big?'@l':''); if(thumbCache[key]) return thumbCache[key];
   try{
     if(!glowTex) glowTex=glow();
-    if(!TR){ TR=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true,alpha:true}); TR.setSize(420,260); TR.outputEncoding=THREE.sRGBEncoding; TR.toneMapping=THREE.ACESFilmicToneMapping; TR.toneMappingExposure=.85; TR.shadowMap.enabled=true;
-      TSc={scene:new THREE.Scene(),cam:new THREE.PerspectiveCamera(32,420/260,.1,100)};
-      const s=TSc.scene; s.add(new THREE.HemisphereLight(0xcfe0ff,0x303030,.7)); const d=new THREE.DirectionalLight(0xffffff,1.6); d.position.set(5,9,6); d.castShadow=true; s.add(d);
-      const r=new THREE.PointLight(0x3d8bff,1.2,20); r.position.set(-4,3,-3); s.add(r);
-      const fl=new THREE.Mesh(new THREE.CircleGeometry(9,48),M({color:0x141a26,roughness:.55,metalness:.3})); fl.rotation.x=-Math.PI/2; fl.receiveShadow=true; s.add(fl);
+    if(!TR){ TR=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true,alpha:false}); TR.outputEncoding=THREE.sRGBEncoding; TR.toneMapping=THREE.ACESFilmicToneMapping; TR.toneMappingExposure=.9; TR.shadowMap.enabled=true; TR.shadowMap.type=THREE.PCFSoftShadowMap;
+      TSc={scene:new THREE.Scene(),cam:new THREE.PerspectiveCamera(32,420/260,.1,200)};
+      const s=TSc.scene; s.background=new THREE.Color(0x0e1830); s.add(new THREE.HemisphereLight(0xcfe0ff,0x303030,.6));
+      const d=new THREE.DirectionalLight(0xffffff,1.5); d.position.set(6,10,7); d.castShadow=true; d.shadow.mapSize.set(1024,1024); Object.assign(d.shadow.camera,{left:-12,right:12,top:12,bottom:-12}); s.add(d);
+      const r=new THREE.PointLight(0x3d8bff,1.4,30); r.position.set(-5,4,-4); s.add(r);
+      // garaje: suelo brillante con líneas amarillas, pared con fluorescentes
+      const fl=new THREE.Mesh(new THREE.PlaneGeometry(60,60),M({map:ctex(512,512,(g,w,h)=>{ g.fillStyle='#3a404a'; g.fillRect(0,0,w,h); for(let i=0;i<4000;i++){ const v=50+Math.random()*25; g.fillStyle=`rgb(${v},${v+3},${v+8})`; g.fillRect(Math.random()*w,Math.random()*h,2,2);} g.fillStyle='#e0b331'; g.fillRect(60,0,10,h); g.fillRect(w-70,0,10,h); },[3,3]),roughness:.25,metalness:.45}));
+      fl.rotation.x=-Math.PI/2; fl.receiveShadow=true; s.add(fl);
+      const wall=new THREE.Mesh(new THREE.PlaneGeometry(60,20),M({map:panelWall('#4a5262','#3c4352'),roughness:.8})); wall.position.set(0,10,-9); s.add(wall);
+      for(let x=-16;x<=16;x+=8){ const l=new THREE.Mesh(new THREE.BoxGeometry(4,.1,.4),M({color:0xffffff,emissive:0xeaf2ff,emissiveIntensity:2})); l.position.set(x,9,-6); s.add(l); }
       const p=new THREE.PMREMGenerator(TR); const es=new THREE.Scene(); es.add(new THREE.Mesh(new THREE.SphereGeometry(50,16,8),new THREE.MeshBasicMaterial({map:skyTex('day'),side:THREE.BackSide}))); s.environment=p.fromScene(es,.03).texture; }
-    const m=vehicleModel(id); const V=window.PE_DATA.VEHICLES.find(x=>x.id===id)||{};
-    m.rotation.y=.55; TSc.scene.add(m);
-    const far={heli:15,dron:2.6,moto:4.6,furgoneta:9.5}[V.cat]||8.2, y={heli:5,dron:4.1,moto:2,furgoneta:3.4}[V.cat]||2.8, ty={heli:1.3,dron:3,moto:.9,furgoneta:1.3}[V.cat]||.85;
-    TSc.cam.position.set(far*.55,y,far*.85); TSc.cam.lookAt(0,ty,0);
+    const W2=big?900:420, H2=big?560:260; TR.setSize(W2,H2); TSc.cam.aspect=W2/H2; TSc.cam.updateProjectionMatrix();
+    let m, V={};
+    if(id.startsWith('station')){ m=makeStation(+id.split(':')[1]||1); m.rotation.y=-.3; TSc.cam.position.set(13,7,21); TSc.cam.lookAt(0,2.4,0); }
+    else { m=vehicleModel(id); V=window.PE_DATA.VEHICLES.find(x=>x.id===id)||{}; m.rotation.y=big?.95:.55;
+      const far={heli:15,dron:2.6,moto:4.6,furgoneta:9.5}[V.cat]||8.2, y={heli:5,dron:4.1,moto:2,furgoneta:3.4}[V.cat]||2.8, ty={heli:1.3,dron:3,moto:.9,furgoneta:1.3}[V.cat]||.85;
+      const k=big?1.35:1; TSc.cam.position.set(far*.55*k,y*(big?1.15:1),far*.85*k); TSc.cam.lookAt(0,ty,0); }
+    m.traverse(o=>{ if(o.isMesh){ o.castShadow=true; } }); TSc.scene.add(m);
     const keep=T; T=0; flashSirens([m],.9); T=keep;
-    TR.render(TSc.scene,TSc.cam); const url=TR.domElement.toDataURL('image/png'); TSc.scene.remove(m);
-    thumbCache[id]=url; return url; }catch(e){ console.warn(e); return null; }
+    TR.render(TSc.scene,TSc.cam); const url=TR.domElement.toDataURL('image/jpeg',.9); TSc.scene.remove(m);
+    thumbCache[key]=url; return url; }catch(e){ console.warn(e); return null; }
 }
 
 // ================= bucle y API =================

@@ -88,13 +88,13 @@ const ROLES = {
 };
 // Vehículos de la Tienda (nombres genéricos, sin marcas reales)
 const VEHICLES = [
-  {id:'compacto',cat:'patrulla',n:'Compacto patrulla',price:300,cost:30,sp:1.0,d:'Coche ágil para patrullar la ciudad',model:{len:4.1,h:.95,cab:.78}},
-  {id:'berlina',cat:'patrulla',n:'Berlina patrulla',price:650,cost:40,sp:1.12,d:'Más rápida: los agentes llegan antes a los avisos',model:{len:4.8,h:.88,cab:.72}},
-  {id:'suv',cat:'patrulla',n:'Todoterreno patrulla',price:1100,cost:55,sp:1.2,d:'El más rápido y robusto de los coches',model:{len:4.7,h:1.25,cab:.88,suv:true}},
-  {id:'furgo',cat:'furgoneta',n:'Furgoneta de intervención',price:1500,cost:60,d:'+2 plazas de calabozo y apoyo en los registros (los sospechosos huyen más despacio)'},
-  {id:'moto',cat:'moto',n:'Moto de patrulla',price:400,cost:15,sp:1.25,d:'Un agente en moto se mueve muy rápido por el centro'},
-  {id:'heli',cat:'heli',n:'Helicóptero ligero',price:6000,cost:400,max:1,d:'Viaja al instante entre tus comisarías'},
-  {id:'dron',cat:'dron',n:'Dron de vigilancia',price:800,cost:20,max:3,d:'Los avisos duran más y detectas indicios desde más lejos'},
+  {id:'compacto',st:{vel:6,acc:6,bli:4,cap:4},cat:'patrulla',n:'Compacto patrulla',price:300,cost:30,sp:1.0,d:'Coche ágil para patrullar la ciudad',model:{len:4.1,h:.95,cab:.78}},
+  {id:'berlina',st:{vel:8,acc:7,bli:5,cap:5},cat:'patrulla',n:'Berlina patrulla',price:650,cost:40,sp:1.12,d:'Más rápida: los agentes llegan antes a los avisos',model:{len:4.8,h:.88,cab:.72}},
+  {id:'suv',st:{vel:9,acc:7,bli:7,cap:5},cat:'patrulla',n:'Todoterreno patrulla',price:1100,cost:55,sp:1.2,d:'El más rápido y robusto de los coches',model:{len:4.7,h:1.25,cab:.88,suv:true}},
+  {id:'furgo',st:{vel:5,acc:4,bli:8,cap:9},cat:'furgoneta',n:'Furgoneta de intervención',price:1500,cost:60,d:'+2 plazas de calabozo y apoyo en los registros (los sospechosos huyen más despacio)'},
+  {id:'moto',st:{vel:9,acc:9,bli:1,cap:1},cat:'moto',n:'Moto de patrulla',price:400,cost:15,sp:1.25,d:'Un agente en moto se mueve muy rápido por el centro'},
+  {id:'heli',st:{vel:10,acc:8,bli:5,cap:6},cat:'heli',n:'Helicóptero ligero',price:6000,cost:400,max:1,d:'Viaja al instante entre tus comisarías'},
+  {id:'dron',st:{vel:7,acc:9,bli:1,cap:0},cat:'dron',n:'Dron de vigilancia',price:800,cost:20,max:3,d:'Los avisos duran más y detectas indicios desde más lejos'},
 ];
 const VCATS = [['patrulla','Patrullas'],['furgoneta','Furgonetas'],['moto','Motos'],['heli','Helicópteros'],['dron','Drones']];
 const SALARY = {agente:40,detective:70,analista:60,guia:60,jefe:0};
@@ -132,36 +132,36 @@ const TIPS = [
 ];
 
 const MIS = [
-  {id:'m1',n:'Primer servicio',zona:'Madrid',pre:[],rw:500,rep:3,d:'Demuestra que sabes detener respetando la ley.',steps:[
+  {id:'m1',rl:1,art:'compacto',n:'Primer servicio',zona:'Madrid',pre:[],rw:500,rep:3,d:'Demuestra que sabes detener respetando la ley.',steps:[
     {t:'arrest',city:'madrid',n:2,txt:'Haz 2 detenciones legales en Madrid, leyendo los derechos'},
     {t:'court',n:1,txt:'Pasa a un detenido a disposición judicial desde el Centro de mando'}]},
-  {id:'m2',n:'Carteristas en el centro',zona:'Madrid',pre:['m1'],rw:800,rep:3,d:'Una banda actúa entre los turistas. Observa, busca indicios y cachea con motivo.',steps:[
+  {id:'m2',rl:2,art:'moto',n:'Carteristas en el centro',zona:'Madrid',pre:['m1'],rw:800,rep:3,d:'Una banda actúa entre los turistas. Observa, busca indicios y cachea con motivo.',steps:[
     {t:'arrest',city:'madrid',profile:'carterista',n:2,txt:'Detén a 2 carteristas en Madrid. Observa a quien actúa raro (?) antes de cachear'}]},
-  {id:'m3',n:'Rumbo a la Costa del Sol',zona:'Málaga · Marbella',pre:['m1'],rw:1200,rep:4,d:'La droga entra por el sur. Necesitas presencia en la costa.',steps:[
+  {id:'m3',rl:2,art:'berlina',n:'Rumbo a la Costa del Sol',zona:'Málaga · Marbella',pre:['m1'],rw:1200,rep:4,d:'La droga entra por el sur. Necesitas presencia en la costa.',steps:[
     {t:'own',city:'malaga'},{t:'own',city:'marbella'}]},
-  {id:'m4',n:'Menudeo en Marbella',zona:'Marbella',pre:['m3'],rw:1600,rep:4,d:'Los puntos de venta abastecen a toda la costa. Tira del hilo.',steps:[
+  {id:'m4',rl:3,art:'dron',n:'Menudeo en Marbella',zona:'Marbella',pre:['m3'],rw:1600,rep:4,d:'Los puntos de venta abastecen a toda la costa. Tira del hilo.',steps:[
     {t:'arrest',city:'marbella',profile:'camello',n:2,txt:'Detén legalmente a 2 vendedores de droga en Marbella'},{t:'intel',n:1}]},
-  {id:'m5',n:'Narcolanchas del Estrecho',zona:'Algeciras',pre:['m3'],rw:2600,rep:5,d:'Lanchas rápidas cruzan de noche con fardos de hachís.',steps:[
+  {id:'m5',rl:4,art:'heli',n:'Narcolanchas del Estrecho',zona:'Algeciras',pre:['m3'],rw:2600,rep:5,d:'Lanchas rápidas cruzan de noche con fardos de hachís.',steps:[
     {t:'own',city:'algeciras'},{t:'up',id:'mar'},{t:'boats',at:[-5.42,36.02],n:3,txt:'Intercepta 3 narcolanchas en el Estrecho con la patrullera'}]},
-  {id:'m6',n:'La nave de Sanlúcar',zona:'Sanlúcar de Barrameda',pre:['m5'],rw:3600,rep:5,d:'Las lanchas remontan el Guadalquivir hasta una nave de alijo.',steps:[
+  {id:'m6',rl:5,art:'furgo',n:'La nave de Sanlúcar',zona:'Sanlúcar de Barrameda',pre:['m5'],rw:3600,rep:5,d:'Las lanchas remontan el Guadalquivir hasta una nave de alijo.',steps:[
     {t:'goto',city:'sanlucar'},
     {t:'inspect',city:'sanlucar',pts:[[60,-120],[150,40],[40,150]],names:['Embarcadero','Taller de motores','Nave agrícola'],txt:'Vigila 3 puntos sospechosos de Sanlúcar'},
     {t:'warrant',h:3},{t:'raid',city:'sanlucar',off:[170,-140],n:4,txt:'Entrada y registro en la nave: detén a todos'}]},
-  {id:'m7',n:'Contenedores en el puerto de Valencia',zona:'Valencia · Madrid',pre:['m3'],rw:5000,rep:6,d:'Cocaína escondida en contenedores de fruta. Hay que seguir el cargamento hasta los receptores.',steps:[
+  {id:'m7',rl:6,art:'suv',n:'Contenedores en el puerto de Valencia',zona:'Valencia · Madrid',pre:['m3'],rw:5000,rep:6,d:'Cocaína escondida en contenedores de fruta. Hay que seguir el cargamento hasta los receptores.',steps:[
     {t:'own',city:'valencia'},{t:'up',id:'k9'},
     {t:'inspect',city:'valencia',pts:[[70,-120],[75,-40],[70,40],[65,120]],names:['Contenedor 1','Contenedor 2','Contenedor 3','Contenedor 4'],txt:'Revisa los contenedores del puerto con el perro'},
     {t:'follow',from:'valencia',to:'madrid',txt:'Entrega vigilada: sigue al camión hasta Madrid sin acercarte demasiado'},
     {t:'raid',city:'madrid',off:[-350,250],n:3,txt:'Detén a los receptores en el almacén de Madrid'}]},
-  {id:'m8',n:'Blanqueo en Marbella',zona:'Marbella',pre:['m4'],rw:6000,rep:6,d:'El dinero de la droga se lava con inmobiliarias y coches de lujo.',steps:[
+  {id:'m8',rl:7,art:'berlina',n:'Blanqueo en Marbella',zona:'Marbella',pre:['m4'],rw:6000,rep:6,d:'El dinero de la droga se lava con inmobiliarias y coches de lujo.',steps:[
     {t:'up',id:'ana'},{t:'intel',n:3},
     {t:'inspect',city:'marbella',pts:[[-150,-60],[120,-100],[0,-170]],names:['Inmobiliaria','Concesionario de lujo','Sociedad patrimonial'],txt:'Revisa 3 empresas pantalla'},
     {t:'warrant',h:4},{t:'raid',city:'marbella',off:[-60,-210],n:3,txt:'Registro en la villa del cabecilla'}]},
-  {id:'m9',n:'Planeadoras en las Rías',zona:'Vigo',pre:['m5'],rw:4000,rep:5,d:'Las rías gallegas vuelven a ver planeadoras de noche.',steps:[
+  {id:'m9',rl:6,art:'heli',n:'Planeadoras en las Rías',zona:'Vigo',pre:['m5'],rw:4000,rep:5,d:'Las rías gallegas vuelven a ver planeadoras de noche.',steps:[
     {t:'own',city:'vigo'},{t:'boats',at:[-8.95,42.2],n:4,txt:'Intercepta 4 planeadoras frente a Vigo'}]},
-  {id:'m10',n:'Narcopisos en Barcelona',zona:'Barcelona',pre:['m2'],rw:4500,rep:5,d:'Pisos ocupados se usan como puntos de venta. Los vecinos piden ayuda.',steps:[
+  {id:'m10',rl:5,art:'furgo',n:'Narcopisos en Barcelona',zona:'Barcelona',pre:['m2'],rw:4500,rep:5,d:'Pisos ocupados se usan como puntos de venta. Los vecinos piden ayuda.',steps:[
     {t:'own',city:'barcelona'},{t:'arrest',city:'barcelona',profile:'camello',n:3,txt:'Detén legalmente a 3 vendedores en Barcelona'},
     {t:'warrant',h:2},{t:'raid',city:'barcelona',off:[-200,-120],n:3,txt:'Entrada en el narcopiso'}]},
-  {id:'m11',n:'Operación Costa del Sol',zona:'Málaga · Marbella · Algeciras',pre:['m6','m7','m8'],rw:15000,rep:10,d:'Golpe final contra la organización: tres registros simultáneos.',steps:[
+  {id:'m11',rl:9,art:'suv',n:'Operación Costa del Sol',zona:'Málaga · Marbella · Algeciras',pre:['m6','m7','m8'],rw:15000,rep:10,d:'Golpe final contra la organización: tres registros simultáneos.',steps:[
     {t:'up',id:'gei'},{t:'veh',cat:'heli'},
     {t:'raid',city:'malaga',off:[-100,-150],n:4,txt:'Registro en Málaga'},
     {t:'raid',city:'marbella',off:[100,-150],n:4,txt:'Registro en Marbella'},

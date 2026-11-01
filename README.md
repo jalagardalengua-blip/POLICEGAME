@@ -11,9 +11,14 @@ No hay niveles: el mapa es la península entera y se juega de forma continua.
 | **Mapa de España** | Escudos de cada comisaría (azul: tuya; gris: por abrir; rojo: misión), avisos por ciudad, ficha con «Entrar», «Volar» o «Marcar ruta», panel de misión actual, tiempo y hora |
 | **Mi Comisaría (3D)** | Edificio, coches de tu flota con sirenas que se reflejan en el suelo mojado, helicóptero, bandera, plantilla en la puerta. Tarjetas de garaje, interrogatorio y calabozos con mantenimiento diario |
 | **Patrulla (3D)** | Conduces o caminas por la ciudad con cámara detrás, velocímetro, radio, sirena, cambio de vehículo, flechas y pedal táctiles. Fuera de las ciudades pasa al mapa de carreteras |
-| **Interrogatorio (3D)** | Sala con mesa, pruebas, lámpara y espejo. El sospechoso reacciona (niega, confiesa, calla, se asusta) y su abogado aparece cuando llega. Nivel de cooperación y respuestas posibles |
+| **Interrogatorio (3D)** | Ficha del sospechoso (edad y delito), preguntas concretas, nivel de cooperación y respuestas posibles. El sospechoso reacciona y su abogado aparece cuando llega |
 | **Calabozos (3D)** | Pasillo con celdas y presos. Lista de detenidos con horas, pruebas y abogado; botones para pasar al juez, interrogar o liberar |
-| **Tienda / Garaje** | Patrullas (compacto, berlina, todoterreno), furgonetas, motos, helicóptero y drones con imágenes 3D. Cada vehículo cambia el juego |
+| **Garaje** | Patrullas (compacto, berlina, todoterreno), furgonetas, motos, helicóptero y drones con imagen 3D grande y estadísticas de velocidad, aceleración, blindaje y capacidad |
+| **Gestión de comisaría** | Imagen 3D de la comisaría, prestigio, mejoras del siguiente nivel y pestañas de Información, Personal, Vehículos e Instalaciones |
+| **Personal** | Fichas con retrato, estrellas de nivel y energía; contratar agentes y especialistas |
+| **Misiones disponibles** | Tarjetas con imagen, nivel recomendado, recompensa en euros y XP, y botón Aceptar |
+| **Tu perfil** | Tu jefe, nivel y estadísticas de carrera |
+| **Persecuciones** | Un coche huye tras un atraco: tienes 90 segundos para cerrarle el paso con la patrulla |
 
 La interfaz tiene perfil de jefe con nivel y experiencia, contadores de fondos (€), reputación e inteligencia, menú lateral, minimapa con zoom y acciones rápidas (desplegar unidades, sanción, arrestar, refuerzos y helicóptero).
 

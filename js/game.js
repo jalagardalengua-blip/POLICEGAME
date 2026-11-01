@@ -174,7 +174,7 @@ const inPlaza=(c,x,y,m=0)=>x>c.plaza.x-m&&x<c.plaza.x+c.plaza.w+m&&y>c.plaza.y-m
 function stationHere(){ const c=cityAt(player.x,player.y); return c&&S.owned[c.id]&&inPlaza(c,player.x,player.y,20)?c:null; }
 const makeName=()=>pick(NOMBRES)+' '+pick(APELL)+' '+pick(APELL);
 function makeDNI(){ const n=10000000+Math.floor(Math.random()*89999999); return n+'-'+'TRWAGMYFPDXBNJZSQVHLCKE'[n%23]; }
-function newDetainee(o){ return Object.assign({look:{...randLook(),cloth:pick(['#7b808a','#3a4250','#5a3a2a','#2f4a6a','#6a2a34'])},id:S.nid++,h:0,lawyer:false,lawyerAt:2+Math.floor(Math.random()*4)-U('conv')*.6,interrog:0,coerced:false,tainted:false,rights:true,intelGiven:false},o); }
+function newDetainee(o){ return Object.assign({age:19+Math.floor(Math.random()*40),look:{...randLook(),cloth:pick(['#7b808a','#3a4250','#5a3a2a','#2f4a6a','#6a2a34'])},id:S.nid++,h:0,lawyer:false,lawyerAt:2+Math.floor(Math.random()*4)-U('conv')*.6,interrog:0,coerced:false,tainted:false,rights:true,intelGiven:false},o); }
 const detBonus=()=>followers('detective').length?12:0;
 function dogAvailable(){ if(followers('guia').length) return true; const c=cityAt(player.x,player.y); return !!c&&S.staff.some(s=>s.role==='guia'&&s.city===c.id&&s.order!=='descanso'); }
 
@@ -192,7 +192,7 @@ function spawnCrime(c){
   let tot=CTYPES.reduce((s,t)=>s+t.w,0), r=Math.random()*tot, T=CTYPES[0]; for(const t of CTYPES){ if((r-=t.w)<=0){T=t;break;} }
   crimes.push({uid:++UID,city:c.id,x:p.x,y:p.y,T,horiz:p.horiz,dir:Math.random()<.5?1:-1,progress:0,life:T.life,max:T.life,taken:null,life:T.life*(1+.3*dronesIn(c.id)),max:T.life*(1+.3*dronesIn(c.id)),reward:T.rw*c.mult*(isNight()?1.3:1),looks:[randLook(),randLook()]});
 }
-function crimeDone(cr){ const i=crimes.indexOf(cr); if(i>=0) crimes.splice(i,1); const fine=cr.reward*.3*repMult(); earn(fine); S.rep=Math.min(100,S.rep+.5); float(cr.x,cr.y-26,'+'+eur(fine),'#ffc94a'); }
+function crimeDone(cr){ const i=crimes.indexOf(cr); if(i>=0) crimes.splice(i,1); S.cityCases=S.cityCases||{}; S.cityCases[cr.city]=(S.cityCases[cr.city]||0)+1; const fine=cr.reward*.3*repMult(); earn(fine); S.rep=Math.min(100,S.rep+.5); float(cr.x,cr.y-26,'+'+eur(fine),'#ffc94a'); }
 function crimeDetainees(cr,rights,bonus=0){
   const out=[]; for(let k=0;k<cr.T.s;k++) out.push(newDetainee({name:makeName(),crime:cr.T.n,art:cr.T.art,ev:58+bonus,rights,value:cr.reward*1.2/cr.T.s,intelCap:!!cr.T.intel||Math.random()<.2,city:cr.city}));
   return out;
@@ -299,7 +299,7 @@ function arrestPed(p,rights){
   const crime=wanted?'Requisitoria judicial':p.prof==='camello'?'Tráfico de drogas':'Hurto';
   const art=wanted?'art. 490 LECrim':p.prof==='camello'?'art. 368 CP':'art. 234 CP';
   const value=({camello:200,carterista:120}[p.prof]||180)*c.mult;
-  S.carry.push(newDetainee({name:p.name,crime,art,ev:(wanted?80:62)+detBonus(),rights,tainted:p.tainted,value,intelCap:p.prof==='camello'||wanted,city:p.city}));
+  S.carry.push(newDetainee({age:p.age,name:p.name,crime,art,ev:(wanted?80:62)+detBonus(),rights,tainted:p.tainted,value,intelCap:p.prof==='camello'||wanted,city:p.city}));
   peds.splice(peds.indexOf(p),1); closeModal();
   if(rights&&!p.tainted){ S.stats.legal++; addXP(12,'detención legal'); toast(`Detenido: ${p.name} (${crime}). Derechos leídos`); missionEvent('arrest',{city:p.city,profile:p.prof}); }
   else toast(`Detenido ${p.name}, pero ${!rights?'sin leerle los derechos':'con una prueba ilícita'}: el juez puede anularlo`,true);
@@ -495,11 +495,12 @@ function misTarget(){
 
 // ================= ENTRADA =================
 const keys=new Set(); let joy=null; const touchDrive={l:false,r:false,gas:false};
-const paused=()=>!$('shop').hidden||!$('panel').hidden||!$('modal').hidden||!$('help').hidden||!$('confirm').hidden;
+const paused=()=>!$('scr').hidden||!$('shop').hidden||!$('panel').hidden||!$('modal').hidden||!$('help').hidden||!$('confirm').hidden;
 const frozen=()=>!$('modal').hidden&&$('mTitle').textContent==='Pausa';
 function interact(){ if(!near) return; if(player.inCar&&cityAt(player.x,player.y)){ player.inCar=false; toast('Bajas del coche'); } if(near.kind==='ped') pedModal(near.ref); else staffModal(near.ref.st); }
 addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
+  if(k==='escape'&&$('modal').hidden&&!$('scr').hidden){ $('scr').hidden=true; return; }
   if(k==='escape'&&$('modal').hidden&&$('panel').hidden&&!$('shop').hidden){ $('shop').hidden=true; return; }
   if(k==='escape'&&$('modal').hidden&&$('panel').hidden&&(view==='interro'||view==='cells'||view==='map')){ if(view==='interro') endInterro(); else if(view==='map') goPatrol(); else openHub(hubCity||homeCity()); return; }
   if(k==='escape'){ if(!$('modal').hidden){ const p=peds.find(x=>x.stop>999); if(p) p.stop=0; closeModal(); } else if(!$('panel').hidden) $('panel').hidden=true; return; }
@@ -507,8 +508,8 @@ addEventListener('keydown',e=>{
   if(k==='e'){ if(view==='hub'){ goPatrol(); return; } if(view!=='patrol') return; if(near) interact(); else if(stationHere()) openHub(stationHere()); else openPanel(); return; }
   if(k==='v'&&view==='patrol'){ toggle3D(); return; }
   if(k==='c'&&view==='patrol'){ toggleVeh(); return; }
-  if(k==='m'){ openPanel('mis'); return; }
-  if(k==='p'){ openPanel('pla'); return; }
+  if(k==='m'){ missionsScreen(); return; }
+  if(k==='p'){ personalScreen(); return; }
   keys.add(k); if(e.key.startsWith('Arrow')) e.preventDefault();
 });
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
@@ -650,7 +651,7 @@ function update(dt){
   near=null; let nd=46;
   for(const p of peds){ const d=dist(player,pedPos(p)); if(d<nd){ nd=d; near={kind:'ped',ref:p}; } }
   for(const a of actors){ if(!a.visible||a.st.order==='seguir') continue; const d=dist(player,a); if(d<nd){ nd=d; near={kind:'staff',ref:a}; } }
-  updateMission(dt);
+  updateMission(dt); updateChase(dt);
   earn(U('rec')*ownedIds.length*repMult()*dt);
   for(const t of traffic){ t.t+=t.dir*t.sp*dt*(1000/Math.hypot(t.s.b.x-t.s.a.x,t.s.b.y-t.s.a.y)); if(t.t>1){t.t=1;t.dir=-1;} if(t.t<0){t.t=0;t.dir=1;} }
   for(let i=floats.length-1;i>=0;i--){ floats[i].t+=dt; if(floats[i].t>1.5) floats.splice(i,1); }
@@ -866,6 +867,7 @@ function draw(){
     if(p.showSus>0){ ctx.fillStyle='#ffc94a'; ctx.font='800 16px "Saira Condensed",sans-serif'; ctx.textAlign='center'; ctx.fillText('?',q.x,q.y-13); }
     else if(p.ind){ ctx.fillStyle='#ff9aa5'; ctx.beginPath(); ctx.arc(q.x,q.y-14,2.5,0,7); ctx.fill(); } }
   for(const k of ccars){ const q=carPos(k); if(vis(q.x,q.y)) drawCar(q.x,q.y,carAng(k),{c1:k.col,c2:k.col}); }
+  if(chase&&vis(chase.x,chase.y)){ drawCar(chase.x,chase.y,carAng(chase),{c1:'#b3121f',c2:'#e0303d'}); ctx.beginPath(); ctx.arc(chase.x,chase.y,30+Math.sin(now/120)*5,0,7); ctx.strokeStyle='#ff3b4e'; ctx.lineWidth=3; ctx.stroke(); }
   for(const a of actors) if(a.visible&&vis(a.x,a.y)) drawActor(a);
   for(const p of parts){ if(!vis(p.x,p.y)) continue; const k=p.t/p.life;
     if(p.k==='dust'){ ctx.fillStyle=`rgba(200,190,160,${.35*(1-k)})`; ctx.beginPath(); ctx.arc(p.x,p.y,3+k*8,0,7); ctx.fill(); }
@@ -1013,6 +1015,7 @@ function drawScreen(){
   const list=crimes.map(c=>({c,d:dist(player,c)})).filter(o=>o.d<2500).sort((a,b)=>a.d-b.d).slice(0,5);
   for(const {c,d} of list) arrow(c.x,c.y,c.life<12?'#ffc94a':'#ff3b4e',km(d));
   const mt=misTarget(); if(mt) arrow(mt.x,mt.y,'#ffe08a','★ '+km(dist(player,mt)));
+  if(chase) arrow(chase.x,chase.y,'#ff3b4e','¡HUYE! '+km(dist(player,chase)));
   if(S.wp&&CBY[S.wp]){ const w=CBY[S.wp]; if(dist(player,w)<w.r) S.wp=null; else arrow(w.x,w.y,'#7fd0ff','➜ '+km(dist(player,w))); }
   if(joy){ ctx.beginPath(); ctx.arc(joy.ox,joy.oy,50,0,7); ctx.strokeStyle='rgba(232,239,255,.35)'; ctx.lineWidth=2; ctx.stroke();
     const jx=joy.x-joy.ox, jy=joy.y-joy.oy, d=Math.hypot(jx,jy), k=d>50?50/d:1; ctx.beginPath(); ctx.arc(joy.ox+jx*k,joy.oy+jy*k,20,0,7); ctx.fillStyle='rgba(232,239,255,.35)'; ctx.fill(); }
@@ -1039,6 +1042,7 @@ function drawMini(){
     if(S.owned[c.id]) mmBadge(cx,cy,'#2a63d4'); else { mctx.fillStyle='#8a93a8'; mctx.beginPath(); mctx.arc(cx,cy,7,0,7); mctx.fill(); }
     mctx.font='700 24px "Saira Condensed",sans-serif'; mctx.textAlign='center'; mctx.lineWidth=5; mctx.strokeStyle='rgba(0,0,0,.65)'; mctx.strokeText(c.n,cx,cy-r-34*k-26); mctx.fillStyle='#fff'; mctx.fillText(c.n,cx,cy-r-34*k-26); }
   for(const cr of crimes){ const x=X(cr.x), y=Y(cr.y); if(x>-20&&y>-20&&x<w+20&&y<h+40) mmPin(x,y,cr.life<12?'#ffc94a':'#ff3b4e'); }
+  if(chase) mmPin(X(chase.x),Y(chase.y),Math.floor(now/200)%2?'#ff3b4e':'#fff');
   const mt=misTarget();
   if(mt){ let x=X(mt.x), y=Y(mt.y); const out=x<0||y<0||x>w||y>h; x=Math.max(16,Math.min(w-16,x)); y=Math.max(16,Math.min(h-16,y));
     mctx.fillStyle='#ffc94a'; mctx.strokeStyle='#1a1300'; mctx.lineWidth=2; mctx.beginPath(); for(let i=0;i<10;i++){ const a=-Math.PI/2+i*Math.PI/5, r=(i%2?6:14)*(1+.1*Math.sin(now/200)); mctx.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r); } mctx.closePath(); mctx.fill(); mctx.stroke(); void out; }
@@ -1131,8 +1135,10 @@ function streetState(){
   if(st&&st.t==='inspect'){ const c=CBY[st.city], done=S.mis.d.done||[]; st.pts.forEach((p,i)=>{ if(!done.includes(i)) markers.push({key:st.city+i,x:c.x+p[0],y:c.y+p[1],label:st.names[i]}); }); }
   if(st&&st.t==='raid'&&!S.mis.d.spawned){ const P=stepPoint(st); markers.push({key:'raid'+st.city,x:P.x,y:P.y,label:'Registro'}); }
   const carsS=ccars.filter(k=>nearP(k)).map(k=>{ const q=carPos(k); return {id:k.uid,x:q.x,y:q.y,ang:carAng(k),col:k.col}; });
+  if(chase) carsS.push({id:'chase'+chase.uid,x:chase.x,y:chase.y,ang:carAng(chase),col:'#c4121f',flee:true});
+  let camD=player.mode==='foot'?26:44; { const ca=Math.cos(player.ang), sa=Math.sin(player.ang); for(let d=4;d<=camD;d+=3){ if(!streetOK(player.x-ca*d,player.y-sa*d)){ camD=Math.max(6,d-4); break; } } }
   const nearKey=near?(near.kind==='ped'?'p'+near.ref.uid:'a'+near.ref.st.id):null;
-  return {nearKey,cars:carsS,player:{x:player.x,y:player.y,ang:player.ang,mode:player.mode==='foot'?'foot':'car',siren:S.siren,walk:player.walk,moving:player.moving},actors:actorsS,peds:pedsS,crimes:crimesS,raiders:raidS,markers,hour:hourOfDay(),rain:weather.rain>.4};
+  return {camD:camD*.25,nearKey,cars:carsS,player:{x:player.x,y:player.y,ang:player.ang,mode:player.mode==='foot'?'foot':'car',siren:S.siren,walk:player.walk,moving:player.moving},actors:actorsS,peds:pedsS,crimes:crimesS,raiders:raidS,markers,hour:hourOfDay(),rain:weather.rain>.4};
 }
 function radioModal(){
   const c=cityAt(player.x,player.y)||homeCity(); const list=crimes.filter(x=>x.city===c.id).sort((p,q)=>dist(p,player)-dist(q,player));
@@ -1183,7 +1189,7 @@ function drawMapView(){
   // panel de misión y tiempo
   const m=curMis(), sp=curStep(), av=MIS.filter(misAvail)[0], show=m||av;
   $('mapMis').innerHTML=show?`<h3>${m?'Misión actual':'Nueva misión'}</h3><div class="t"><span class="ex">!</span>${show.n}</div><p>${m?stepText(sp):show.d}</p><div class="rw">Recompensa:<span>${eur(show.rw)}</span><span>+ ${Math.round(80+show.rw/20)} XP</span></div><button class="blue" id="mapDet">Ver detalles ›</button>`:'<h3>Sin misiones</h3><p>Abre comisarías y sigue patrullando.</p>';
-  const md=$('mapDet'); if(md) md.onclick=()=>openPanel('mis');
+  const md=$('mapDet'); if(md) md.onclick=()=>missionsScreen();
   const c=cityAt(player.x,player.y)||homeCity(), h=hourOfDay(), lat=latOf(c.y), temp=Math.round(12+(44-lat)*1.7+6*Math.sin((h-9)/24*Math.PI*2)-weather.rain*4);
   $('mapWx').innerHTML=`${weather.rain>.4?'Lluvia':h>=7&&h<20?'Soleado':'Despejado'} · <b>${temp} °C</b> · España - ${c.n} · Hora <b>${String(Math.floor(h)).padStart(2,'0')}:${String(Math.floor((h%1)*6)*10).padStart(2,'0')}</b>`;
 }
@@ -1228,23 +1234,28 @@ function ivTurn(kind){
 }
 function endInterro(){ if(!IV) return; const back=IV.back; IV.d.interrog++; IV=null; if(back==='cells') openCellsView(); else if(back==='patrol') goPatrol(); else openHub(hubCity||homeCity()); }
 function renderInterro(){
-  const d=IV.d; $('ivName').textContent='Sospechoso: '+d.name; $('ivAva').innerHTML=faceSVG(d.look||randLook());
-  const B=(ico,l,k,cls='')=>`<button data-iv="${k}" class="${cls}"><span class="ic">${PE_ICONS.I[ico]}</span>${l}</button>`;
+  const d=IV.d, drug=/droga|hachís/i.test(d.crime), money=/robo|hurto|atraco/i.test(d.crime);
+  $('ivName').textContent=d.name; $('ivAge').textContent='Edad: '+(d.age||30)+' años'; $('ivCrime').textContent='Delito: '+d.crime;
+  $('ivAva').innerHTML=faceSVG2(d.look||randLook(),{cloth:'#e8742a',bg:'#5c626d',frown:true});
+  const B=(ico,l,k,cls='')=>`<button data-iv="${k}" class="${cls}"><span class="ic">${PE_ICONS.I[ico]}</span><span>${l}</span></button>`;
   let menu='';
-  if(!d.lawyer&&!IV.started) menu=B('stop','Esperar al abogado','wait','hot')+B('press','Interrogar sin abogado','nolaw','bad')+B('docs','Volver','end');
-  else if(IV.turns>0&&!IV.silent) menu=B('ask','Preguntar','ask','hot')+B('docs','Mostrar pruebas','show')+B('press','Presionar','press','bad')+B('deal','Ofrecer acuerdo','deal')+B('stop','Finalizar','end');
-  else menu=B('stop','Finalizar','end','hot');
+  if(!d.lawyer&&!IV.started) menu=B('stop','Esperar al abogado de oficio','wait','hot')+B('press','Interrogar sin abogado (declaración nula)','nolaw','bad')+B('docs','Volver','end');
+  else if(IV.turns>0&&!IV.silent) menu=B('chat',drug?'¿De dónde sale el dinero?':money?'¿Dónde está lo que te llevaste?':'¿Dónde estabas cuando ocurrió?','ask','hot')
+    +B('docs','Mira estas pruebas. ¿Qué tienes que decir?','show')+B('deal','¿Quién más estaba implicado? Colaborar te ayudará','deal')
+    +B('press','Te advierto: puedes pasar mucho tiempo en prisión…','warn')+B('press','Amenazarle para que confiese (ilegal)','press','bad')+B('stop','Terminar el interrogatorio','end');
+  else menu=B('stop','Continuar ›','end','hot');
   $('ivMenu').innerHTML=menu;
   const likely=[]; if(d.ev>=50) likely.push(['Confiesa el delito',IV.coop>50]); likely.push(['Niega los hechos',IV.coop<=50]);
   if(d.intelCap&&!d.intelGiven) likely.push(['Da información sobre otros',IV.coop>60]); likely.push(['Se acoge a su derecho a no declarar',IV.coop<25]); if(!d.lawyer) likely.push(['Pide un abogado',true]);
   $('ivPanel').innerHTML=`<h4>Nivel de cooperación</h4><div class="coop"><div class="bar"><i style="width:${IV.coop}%"></i></div><b>${Math.round(IV.coop)}%</b></div>
     <div class="gold">Posibles respuestas:</div><ul>${likely.map(([t,on])=>`<li style="${on?'color:#fff;font-weight:700':'color:#9fb0d4'}">${t}</li>`).join('')}</ul>
-    <div class="ficha"><div>${d.crime} · ${d.art}</div><div>Pruebas ${Math.round(d.ev)} % · Abogado ${d.lawyer?'presente':'ausente'} · Turnos ${Math.max(0,IV.turns)}</div></div>
+    <div class="ficha"><div>${d.art}</div><div>Pruebas ${Math.round(d.ev)} % · Abogado ${d.lawyer?'presente':'ausente'} · Preguntas ${Math.max(0,IV.turns)}</div></div>
     ${IV.log.length?`<ul class="log">${IV.log.slice(-4).map(([t,c])=>`<li class="${c}">${t}</li>`).join('')}</ul>`:`<div class="legal">${d.lawyer?'El abogado está presente. El detenido puede no declarar.':`Aún no tiene abogado: llegará en unas ${Math.max(1,Math.ceil(d.lawyerAt-d.h))} h. Sin él, la declaración es nula (art. 520.2.c LECrim).`}</div>`}`;
   const bb=$('ivBubble'); bb.hidden=!IV.line; bb.textContent=IV.line?`«${IV.line}»`:''; bb.classList.toggle('bad',!!IV.badLine);
   $('ivMenu').querySelectorAll('[data-iv]').forEach(b=>b.onclick=()=>{ const k=b.dataset.iv;
     if(k==='end'||k==='wait'){ if(k==='wait') toast('Esperas al abogado de oficio'); return endInterro(); }
     if(k==='nolaw'){ IV.started=true; d.coerced=true; S.rep=Math.max(0,S.rep-5); toast('Declaración sin abogado: será nula. −5 reputación',true); ivSay('¿Y mi abogado? No pienso decir nada sin él.','deny',true); return renderInterro(); }
+    if(k==='warn'){ if(d.ev>=50&&Math.random()<.45){ IV.coop+=18; IV.log.push(['Le explicas lo que dice la ley. Se pone nervioso y colabora más.','ok']); ivSay('Vale… ¿y si cuento lo que sé?','confess'); } else { IV.log.push(['No le impresiona.','']); ivSay('No me asusta. Hable con mi abogado.','deny'); } IV.turns--; return renderInterro(); }
     ivTurn(k); });
 }
 
@@ -1294,6 +1305,120 @@ function buyVehicle(id){
   toast(`${v.n} incorporado a la flota de ${c.n}`); saveLocal(); renderShop();
 }
 
+// ================= PANTALLAS DE GESTIÓN =================
+const STARS=n=>'★'.repeat(n)+'☆'.repeat(5-n);
+function faceSVG2(l,o={}){ const cap=o.cap?`<path d="M28 30c2-14 42-14 44 0z" fill="${o.cap}"/><rect x="26" y="28" width="48" height="7" rx="3" fill="${o.cap}"/><rect x="46" y="22" width="8" height="6" fill="#ffc94a"/>`:`<path d="M30 40c0-16 9-24 20-24s21 8 21 24c-3-7-8-11-21-11s-17 4-20 11z" fill="${l.hair}"/>${l.long?`<path d="M30 40v22h6V40zM64 40v22h6V40z" fill="${l.hair}"/>`:''}`;
+  return `<svg class="i" viewBox="0 0 100 100"><rect width="100" height="100" fill="${o.bg||'#2a3346'}"/><path d="M10 100c2-18 16-26 40-26s38 8 40 26z" fill="${o.cloth||l.cloth||'#7b808a'}"/>${o.vest?`<rect x="20" y="86" width="60" height="4" fill="${o.vest}"/>`:''}<rect x="42" y="60" width="16" height="16" fill="${l.skin}"/><ellipse cx="50" cy="46" rx="19" ry="23" fill="${l.skin}"/>${cap}<circle cx="42" cy="48" r="2.3" fill="#111"/><circle cx="58" cy="48" r="2.3" fill="#111"/><path d="M38 41l7-1M55 40l7 1" stroke="#2b1b12" stroke-width="2" stroke-linecap="round"/><path d="M44 61c4 ${o.frown?-2:1.5} 8 ${o.frown?-2:1.5} 12 0" stroke="#6a3a2a" stroke-width="2" fill="none"/></svg>`; }
+function staffFace(st){ const R=ROLES[st.role]; return faceSVG2(st.look,{cloth:R.body,cap:R.hat,vest:R.vest}); }
+function screen(title,ico,body,tabs,tab){
+  $('scrTitle').textContent=title; $('scrIco').innerHTML=PE_ICONS.I[ico]||'';
+  $('scrPills').innerHTML=`<span><span class="ic">${PE_ICONS.I.money}</span>${eur(S.money)}</span><span><span class="ic">${PE_ICONS.I.shield}</span>${Math.round(S.rep)}</span><span><span class="ic">${PE_ICONS.I.bolt}</span>${S.intel}</span>`;
+  $('scrBody').innerHTML=body; $('scrTabs').innerHTML=(tabs||[]).map(([k,l,ic])=>`<button data-st="${k}" class="${k===tab?'on':''}"><span class="ic">${PE_ICONS.I[ic]}</span>${l}</button>`).join('');
+  $('scrTabs').querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>({info:stationScreen,per:personalScreen,veh:()=>garageScreen(),ins:()=>{ $('scr').hidden=true; openPanel('ins'); }})[b.dataset.st]());
+  $('scr').hidden=false; keys.clear(); joy=null; }
+const STATION_TABS=[['info','Información','info'],['per','Personal','people'],['veh','Vehículos','car'],['ins','Instalaciones','wrench']];
+// ---------- garaje ----------
+let garCat='patrulla', garSel=null;
+function garageScreen(cat){
+  if(cat) { garCat=cat; garSel=null; }
+  const c=homeCity(), list=VEHICLES.filter(v=>v.cat===garCat); if(!garSel||!list.find(v=>v.id===garSel)) garSel=list[0].id;
+  const v=VBY[garSel], n=fleetIn(c.id).length, cap=garageCap(c.id), mine=fleetIn(c.id).filter(x=>x.type===v.id).length;
+  const maxed=v.max&&(v.cat==='heli'?fleetIn(null,'heli').length:mine)>=v.max, dis=S.money<v.price||n>=cap||maxed;
+  const big=window.PE_HUB&&PE_HUB.thumb(v.id,'l');
+  const stat=(l,val,txt)=>`<div class="stat"><span>${l}</span>${txt!=null?`<b>${txt}</b>`:`<div class="bar"><i style="width:${val*10}%"></i></div>`}</div>`;
+  const ic={patrulla:'car',furgoneta:'car',moto:'car',heli:'heli',dron:'bolt'};
+  screen('Garaje de patrullas','car',`<div class="gar">
+    <nav class="gcats">${VCATS.map(([k,l])=>`<button data-gc="${k}" class="${k===garCat?'on':''}"><span class="ic">${PE_ICONS.I[ic[k]]}</span>${l}</button>`).join('')}</nav>
+    <div class="gview"><div class="big">${big?`<img src="${big}" alt="${v.n}">`:`<span class="ic" style="width:120px;height:120px">${PE_ICONS.I[ic[v.cat]]}</span>`}</div>
+      <div class="gmodels">${list.map(x=>`<button data-gm="${x.id}" class="${x.id===garSel?'on':''}">${window.PE_HUB&&PE_HUB.thumb(x.id)?`<img src="${PE_HUB.thumb(x.id)}" alt="">`:''}${x.n}</button>`).join('')}</div></div>
+    <aside class="gspec"><h3>${v.n}</h3>${stat('Velocidad',v.st.vel)}${stat('Aceleración',v.st.acc)}${stat('Blindaje',v.st.bli)}${stat('Capacidad',0,v.st.cap+(v.st.cap===1?' plaza':' plazas'))}
+      <div class="note">${v.d}</div><div class="price"><span class="ic">${PE_ICONS.I.coin}</span>${eur(v.price)}</div>
+      <button class="blue" data-gbuy ${dis?'disabled':''}>${maxed?'Máximo alcanzado':n>=cap?'Garaje lleno':S.money<v.price?'Sin fondos suficientes':'Comprar'}</button>
+      <div class="note">En ${c.n}: ${mine} · mantenimiento ${eur(v.cost)}/día</div></aside></div>`,STATION_TABS,'veh');
+  $('scrBody').insertAdjacentHTML('beforeend',`<div class="gfoot" style="margin-top:12px">Tu flota en ${c.n}: <b>${n} / ${cap}</b> · mantenimiento total ${eur(dailyCost())}/día <button class="blue" data-gup ${(S.owned[c.id].lvl||1)>=3||S.money<lvlCost(c.id)?'disabled':''}>${(S.owned[c.id].lvl||1)>=3?'Garaje al máximo':'Mejorar flota · '+eur(lvlCost(c.id))+' ›'}</button></div>`);
+  const B=$('scrBody'); B.querySelectorAll('[data-gc]').forEach(b=>b.onclick=()=>garageScreen(b.dataset.gc));
+  B.querySelectorAll('[data-gm]').forEach(b=>b.onclick=()=>{ garSel=b.dataset.gm; garageScreen(); });
+  B.querySelector('[data-gbuy]').onclick=()=>{ buyVehicle(v.id); garageScreen(); };
+  B.querySelector('[data-gup]').onclick=()=>{ upgradeStation(c); garageScreen(); };
+}
+function upgradeStation(c){ const cost=lvlCost(c.id); if(S.money>=cost&&(S.owned[c.id].lvl||1)<3){ S.money-=cost; S.owned[c.id].lvl=(S.owned[c.id].lvl||1)+1; addXP(40,'comisaría ampliada'); toast(`Comisaría de ${c.n} ampliada a nivel ${S.owned[c.id].lvl}`); saveLocal(); } }
+// ---------- personal ----------
+function personalScreen(){
+  const c=homeCity(), st=S.staff.filter(x=>x.city===c.id), n=agN(c.id), mx=agMax(c.id), cost=agCost(c.id);
+  screen('Personal · '+c.n,'people',`<div class="per"><div class="plist">${st.map(x=>`<button class="pcard" data-sf="${x.id}"><div class="face">${staffFace(x)}</div><b>${x.name}</b><span>${ROLES[x.role].n} · <span class="stars">${STARS(lvlOf(x))}</span></span><small>${ORDERTXT[x.order]||x.order} · energía ${Math.round(x.energy)} %</small></button>`).join('')}</div>
+    <aside class="hire"><h3>Contratar agente</h3><div class="sil">${PE_ICONS.SIL}</div><div class="cost">Coste: <b>${eur(cost)}</b></div>
+      <button class="blue" data-hire ${n>=mx||S.money<cost?'disabled':''}>${n>=mx?'Amplía la comisaría':'Contratar'}</button><div>Agentes actuales: <b>${n} / ${mx}</b></div>
+      <div class="spec"><b>Especialistas</b>${['det','ana','k9'].map(id=>{ const u=UPG[id], mxd=U(id)>=u.max; return `<button data-up="${id}" ${mxd||S.money<ucost(id)?'disabled':''}><span>${u.n}</span><span>${mxd?'Máx.':eur(ucost(id))}</span></button>`; }).join('')}</div></aside></div>`,STATION_TABS,'per');
+  const B=$('scrBody');
+  B.querySelectorAll('[data-sf]').forEach(b=>b.onclick=()=>{ const x=S.staff.find(y=>String(y.id)===b.dataset.sf); if(x) staffModal(x); });
+  B.querySelector('[data-hire]').onclick=()=>{ if(S.money>=cost&&agN(c.id)<agMax(c.id)){ S.money-=cost; const nn=newStaff('agente',c.id); syncActors(); toast(`${nn.name} se incorpora a ${c.n}`); saveLocal(); personalScreen(); } };
+  B.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{ const id=b.dataset.up, u=UPG[id], k=ucost(id); if(S.money>=k&&U(id)<u.max){ S.money-=k; S.up[id]=U(id)+1; const nn=newStaff(u.role,c.id); syncActors(); toast(`${nn.name} (${ROLES[u.role].n}) se incorpora a ${c.n}`); saveLocal(); personalScreen(); } });
+}
+// ---------- comisaría ----------
+let staCity=null;
+function stationScreen(){
+  const c=(staCity&&S.owned[staCity]&&CBY[staCity])||homeCity(), o=S.owned[c.id], lvl=o.lvl||1, cases=(S.cityCases||{})[c.id]||0, goal=lvl*25;
+  const img=window.PE_HUB&&PE_HUB.thumb('station:'+lvl,'l');
+  const next=lvl>=3?['Nivel máximo alcanzado']:['+3 plazas para agentes','+3 plazas de garaje',lvl===1?'Alas laterales y más oficinas':'Helipuerto en la azotea'];
+  screen('Gestión de comisaría','wrench',`<div class="cityrow">${Object.keys(S.owned).map(id=>`<button data-cc="${id}" class="${id===c.id?'on':''}">${CBY[id].n}</button>`).join('')}</div>
+    <div class="sta"><div class="simg">${img?`<img src="${img}" alt="Comisaría de ${c.n}">`:''}</div>
+    <div><h3>Comisaría de ${c.n} · Nivel ${lvl}</h3><div class="note">Prestigio: ${cases} casos resueltos aquí</div><div class="xpbar" style="width:100%;max-width:none;height:12px"><i style="width:${Math.min(100,cases/goal*100)}%"></i></div>
+      <div class="note">${S.staff.filter(x=>x.city===c.id).length} personas · ${fleetIn(c.id).length}/${garageCap(c.id)} vehículos · agentes ${agN(c.id)}/${agMax(c.id)}</div>
+      <ul>${next.map(t=>`<li>${t}</li>`).join('')}</ul>
+      <button class="blue" data-sup ${lvl>=3||S.money<lvlCost(c.id)?'disabled':''}>${lvl>=3?'Comisaría al máximo':'Mejorar comisaría · '+eur(lvlCost(c.id))}</button>
+      <button data-shub style="margin-left:8px">Ver en 3D ›</button></div></div>`,STATION_TABS,'info');
+  const B=$('scrBody');
+  B.querySelectorAll('[data-cc]').forEach(b=>b.onclick=()=>{ staCity=b.dataset.cc; stationScreen(); });
+  B.querySelector('[data-sup]').onclick=()=>{ upgradeStation(c); stationScreen(); };
+  B.querySelector('[data-shub]').onclick=()=>{ $('scr').hidden=true; openHub(c); };
+}
+// ---------- misiones ----------
+function missionsScreen(){
+  const m=curMis(), L=lvlFromXp(S.xp);
+  const card=x=>{ const done=S.done.includes(x.id), act=m&&m.id===x.id, av=misAvail(x), img=window.PE_HUB&&PE_HUB.thumb(x.art||'suv');
+    return `<div class="mcard ${done?'done':''} ${act?'act':''} ${!done&&!av?'lock':''}"><div class="img">${img?`<img src="${img}" alt="">`:''}<span class="tag gold">${x.zona}</span></div>
+      <h5>${x.n}</h5><div class="d">Nivel recomendado: <b style="color:${L>=x.rl?'var(--ok)':'#ff8b97'}">${x.rl}</b></div><div class="d">${x.d}</div>
+      <div class="rw"><span>${eur(x.rw)}</span><span>+${Math.round(80+x.rw/20)} XP</span></div>
+      ${act?`<button class="bad" data-mab>Abandonar</button>`:done?`<button disabled>Completada</button>`:av?`<button class="blue" data-mgo="${x.id}" ${m?'disabled':''}>Aceptar</button>`:`<button disabled>Requiere: ${x.pre.filter(p=>!S.done.includes(p)).map(p=>MBY[p].n).join(', ')}</button>`}</div>`; };
+  const order=[...MIS].sort((a,b)=>((m&&a.id===m.id)?-1:0)-((m&&b.id===m.id)?-1:0)||(misAvail(b)-misAvail(a))||(S.done.includes(a.id)-S.done.includes(b.id)));
+  screen('Misiones disponibles','cup',`${m?`<div class="item" style="margin-bottom:12px"><div><b>En curso: ${m.n}</b><div class="d">Paso ${S.mis.i+1}/${m.steps.length}: ${stepText(curStep())}</div></div></div>`:''}<div class="mgrid">${order.map(card).join('')}</div>`);
+  const B=$('scrBody');
+  B.querySelectorAll('[data-mgo]').forEach(b=>b.onclick=()=>{ startMission(b.dataset.mgo); missionsScreen(); });
+  const ab=B.querySelector('[data-mab]'); if(ab) ab.onclick=()=>{ abandonMission(); toast('Misión abandonada'); missionsScreen(); };
+}
+// ---------- perfil ----------
+function profileScreen(){
+  const L=lvlFromXp(S.xp), a=50*(L-1)**2, b=50*L*L, t=S.stats;
+  const row=(ic,l,v)=>`<div><span class="ic">${PE_ICONS.I[ic]}</span>${l}<b>${v}</b></div>`;
+  screen('Tu perfil','user',`<div class="prof"><div class="pava">${PE_ICONS.AVATAR}</div><div><h3>Jefe de Policía</h3><div style="font-size:22px;font-weight:700">Nivel ${L}</div>
+    <div class="xpbar"><i style="width:${(S.xp-a)/(b-a)*100}%"></i></div><div class="note">XP ${fmt(S.xp)} / ${fmt(b)}</div>
+    <div class="rows">${row('cup','Misiones completadas',t.missions)}${row('cuffs','Detenidos legalmente',t.legal)}${row('gavel','Condenas',t.conv)}${row('car','Vehículos en flota',S.fleet.length)}${row('building','Comisarías activas',Object.keys(S.owned).length)}${row('people','Plantilla',S.staff.length)}${row('money','Dinero ganado',eur(t.earned||0))}</div>
+    <div class="slogan">Lidera tu equipo,<br>protege la ciudad</div></div></div>`);
+}
+
+// ---------- persecución en coche ----------
+let chase=null, chaseT=60+Math.random()*60;
+function updateChase(dt){
+  const c=cityAt(player.x,player.y);
+  if(!chase){ chaseT-=dt; if(chaseT<=0){ chaseT=90+Math.random()*90; if(view==='patrol'&&c&&S.owned[c.id]&&player.mode==='car'&&!S.mis){
+      const p0=roadPoint(c); if(p0&&dist(p0,player)>250){ chase={city:c.id,x:p0.horiz?p0.x:c.x+Math.round((p0.x-c.x)/120)*120,y:p0.horiz?c.y+Math.round((p0.y-c.y)/120)*120:p0.y,axis:p0.horiz?'h':'v',dir:1,sp:200,t:90,close:0,uid:++UID,cell:null,look:randLook()};
+        toast('¡Persecución! Un coche huye tras un atraco. Detenlo antes de que escape'); } } }
+    $('chaseBox').hidden=true; return; }
+  const k=chase, cc=CBY[k.city]; k.t-=dt;
+  const s2=k.sp*dt*k.dir; if(k.axis==='h') k.x+=s2; else k.y+=s2;
+  const along=k.axis==='h'?k.x-cc.x:k.y-cc.y, cell=Math.floor(along/120); if(k.cell==null) k.cell=cell;
+  if(cell!==k.cell){ const snap=(k.dir>0?cell:cell+1)*120; k.cell=cell;
+    const away=Math.random()<.6; if(Math.random()<.45||away){ const nx=k.axis==='h'?cc.x+snap:k.x, ny=k.axis==='v'?cc.y+snap:k.y;
+      if(k.axis==='h'){ k.x=nx; k.axis='v'; k.dir=(k.y>player.y)?1:-1; k.cell=Math.floor((k.y-cc.y)/120); } else { k.y=ny; k.axis='h'; k.dir=(k.x>player.x)?1:-1; k.cell=Math.floor((k.x-cc.x)/120); } } }
+  if(Math.hypot(k.x-cc.x,k.y-cc.y)>cc.r-10||!land(k.x,k.y)){ k.dir*=-1; if(k.axis==='h') k.x+=k.sp*dt*k.dir*2; else k.y+=k.sp*dt*k.dir*2; }
+  const d=dist(k,player); if(d<40&&player.mode==='car'){ k.close+=dt; hintMsg='¡Le estás cerrando el paso! Mantente pegado'; } else k.close=Math.max(0,k.close-dt*.5);
+  if(k.close>=1.4){ const T={n:'Robo con violencia',art:'art. 242 CP',s:1,rw:220}; const v=T.rw*cc.mult;
+    if(S.carry.length<carryCap()){ S.carry.push(newDetainee({name:makeName(),crime:'Robo con violencia y huida',art:'art. 242 CP',ev:75,rights:true,value:v,intelCap:true,city:k.city})); S.stats.legal++; }
+    earn(v*.5); addXP(30,'persecución'); toast(`¡Sospechoso detenido tras la persecución! +${eur(v*.5)}. Derechos leídos`); chase=null; $('chaseBox').hidden=true; return; }
+  if(k.t<=0||cityAt(player.x,player.y)!==cc){ toast('El sospechoso se ha escapado. −2 reputación',true); S.rep=Math.max(0,S.rep-2); chase=null; $('chaseBox').hidden=true; return; }
+  $('chaseBox').hidden=false; $('chaseT').textContent=`0${Math.floor(k.t/60)}:${String(Math.floor(k.t%60)).padStart(2,'0')}`;
+}
+
 // ================= ACCIONES =================
 function doAction(a){
   if(a==='deploy'){ const c=inHub&&hubCity?hubCity:homeCity(); const ag=S.staff.filter(s=>s.role==='agente'&&s.city===c.id&&s.order!=='seguir');
@@ -1305,7 +1430,7 @@ function doAction(a){
   else if(a==='backup'){ const c=homeCity(); const cand=actors.filter(x=>x.st.role==='agente'&&x.st.order!=='seguir'&&x.st.energy>20).sort((p,q)=>dist(p,player)-dist(q,player)).slice(0,Math.max(0,Math.min(2,4-followers().length)));
     if(!cand.length){ toast('No hay agentes disponibles. Contrata más o deja que descansen',true); return; }
     cand.forEach(x=>{ x.st.order='seguir'; x.state='idle'; if(x.target){ x.target.taken=null; x.target=null; } }); toast(`Refuerzos en camino: ${cand.map(x=>x.st.name).join(' y ')}`); void c; }
-  else if(a==='heli'){ if(hasHeli()) openMap(); else { toast('Aún no tienes helicóptero. Cómpralo en la Tienda',true); openShop('heli'); } }
+  else if(a==='heli'){ if(hasHeli()) openMap(); else { toast('Aún no tienes helicóptero. Cómpralo en el garaje',true); garageScreen('heli'); } }
   saveLocal();
 }
 function settingsModal(){
@@ -1338,7 +1463,7 @@ function openModal({title,html,acts}){
   acts.forEach(a=>{ const b=document.createElement('button'); b.textContent=a.l; if(a.cls) b.className=a.cls; if(a.dis) b.disabled=true; b.onclick=a.fn; A.appendChild(b); });
   $('modal').hidden=false; keys.clear(); joy=null; const f=A.querySelector('button:not(:disabled)'); if(f) f.focus();
 }
-function closeModal(){ $('modal').hidden=true; renderPanel(); }
+function closeModal(){ $('modal').hidden=true; renderPanel(); if(!$('scr').hidden&&$('scrTitle').textContent.startsWith('Personal')) personalScreen(); }
 let panelTab='det';
 function openPanel(tab){ if(tab) panelTab=tab; keys.clear(); joy=null; $('panel').hidden=false; renderPanel(); }
 const TABS=[['det','Detenidos'],['pla','Plantilla'],['per','Flota y personal'],['ins','Instalaciones'],['com','Comisarías'],['est','Estadísticas'],['mis','Misiones']];
@@ -1419,7 +1544,7 @@ $('pBody').addEventListener('click',e=>{
   if(a==='free'&&d){ S.custody.splice(S.custody.indexOf(d),1); toast(d.name+' queda en libertad'); }
   if(a==='lvl'&&st){ const c=lvlCost(st.id); if(S.money>=c){ S.money-=c; S.owned[st.id].lvl=(S.owned[st.id].lvl||1)+1; toast(`Comisaría de ${st.n} ampliada a nivel ${S.owned[st.id].lvl}`); } }
   if(a==='ag'&&st){ const c=agCost(st.id); if(S.money>=c&&agN(st.id)<agMax(st.id)){ S.money-=c; const n=newStaff('agente',st.id); syncActors(); toast(`${n.name} se incorpora a ${st.n}`); } }
-  if(a==='shop'){ $('panel').hidden=true; openShop(); return; }
+  if(a==='shop'){ $('panel').hidden=true; garageScreen(); return; }
   if(a==='up'&&st){ const c=ucost(arg), u=UPG[arg]; if(S.money>=c&&U(arg)<u.max){ S.money-=c; S.up[arg]=U(arg)+1;
       if(u.role){ const n=newStaff(u.role,st.id); syncActors(); toast(`${n.name} (${ROLES[u.role].n}) se incorpora a ${st.n}${n.dog?' con '+n.dog:''}`); } else toast(u.n+(u.max>1?' · nivel '+U(arg):' disponible')); } }
   if(a==='fly'){ const c=CBY[arg]; player.x=c.x; player.y=c.y+60; followers().forEach(f=>{ f.x=player.x; f.y=player.y; }); $('panel').hidden=true; toast('Aterrizas en '+c.n); }
@@ -1449,13 +1574,14 @@ $('bPatrol').onclick=()=>goPatrol();
 $('bMail').onclick=mailModal; $('bTrophy').onclick=trophyModal; $('bSettings').onclick=settingsModal; $('bPause').onclick=pauseModal;
 $('zIn').onclick=()=>{ mmZoom=Math.max(900,mmZoom/1.6); drawMini(); }; $('zOut').onclick=()=>{ mmZoom=Math.min(16000,mmZoom*1.6); drawMini(); };
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{ const g=b.dataset.go;
-  if(g==='hub') openHub(); else if(g==='map') openMap(); else if(g==='shop') openShop(); else if(g==='cells') openCellsView(); else if(g==='interro') openInterro(); else openPanel(g); }));
+  if(g==='hub') openHub(); else if(g==='map') openMap(); else if(g==='shop') garageScreen(); else if(g==='cells') openCellsView(); else if(g==='interro') openInterro(); else if(g==='mis') missionsScreen(); else if(g==='pla') personalScreen(); else if(g==='com') stationScreen(); else openPanel(g); }));
 $('shopClose').onclick=()=>{ $('shop').hidden=true; };
 $('fleetUp').onclick=()=>{ const c=homeCity(), cost=lvlCost(c.id); if(S.money>=cost&&(S.owned[c.id].lvl||1)<3){ S.money-=cost; S.owned[c.id].lvl=(S.owned[c.id].lvl||1)+1; toast(`Comisaría de ${c.n} ampliada a nivel ${S.owned[c.id].lvl}: más garaje y más plazas`); saveLocal(); renderShop(); } };
 $('mapc').addEventListener('click',mapClick);
 function toggle3D(){ S.view3d=!S.view3d; $('b3dTxt').textContent=S.view3d?'Vista 2D':'Vista 3D'; if(!S.view3d&&street3d){ street3d=false; document.body.classList.remove('street'); PE_HUB.close(); C.style.visibility='visible'; } toast(S.view3d?'Vista 3D en las ciudades':'Vista de mapa'); saveLocal(); }
 function toggleVeh(){ if(!cityAt(player.x,player.y)){ toast('Fuera de la ciudad vas siempre en coche'); return; } player.inCar=!player.inCar; player.spd=0; toast(player.inCar?'Subes al coche patrulla':'Bajas del coche'); }
-$('b3d').onclick=toggle3D; $('bVeh').onclick=toggleVeh; $('bRadio').onclick=radioModal;
+$('b3d').onclick=toggle3D; $('ava').onclick=profileScreen; $('scrClose').onclick=()=>{ $('scr').hidden=true; };
+$('bHorn').onclick=()=>{ peds.forEach(p=>{ if(dist(p,player)<220){ p.stop=Math.max(p.stop,1); p.dir*=-1; } }); ccars.forEach(k=>{ if(dist(k,player)<220) k.wait=Math.max(k.wait,.8); }); toast('¡Piiii!'); }; $('bVeh').onclick=toggleVeh; $('bRadio').onclick=radioModal;
 $('bSiren').onclick=()=>{ S.siren=!S.siren; $('bSiren').classList.toggle('on',S.siren); if(S.siren){ peds.forEach(p=>{ if(dist(p,player)<200) p.stop=Math.max(p.stop,1.5); }); toast('Sirena encendida: abren paso y vas más rápido'); } };
 const hold=(id,k)=>{ const b=$(id); const on=e=>{ e.preventDefault(); touchDrive[k]=true; b.classList.add('on'); }, off=()=>{ touchDrive[k]=false; b.classList.remove('on'); };
   b.addEventListener('pointerdown',on); b.addEventListener('pointerup',off); b.addEventListener('pointerleave',off); b.addEventListener('pointercancel',off); };
@@ -1468,7 +1594,7 @@ document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>doAction(b.dataset.act)));
 addEventListener('visibilitychange',()=>{ if(document.hidden) saveLocal(); });
 if(window.PE_ICONS) PE_ICONS.fill();
-window.PATRULLA_DEBUG={get S(){return S;},get peds(){return peds;},get actors(){return actors;},get player(){return player;},pedModal,staffModal,openPanel,startMission,openHub,closeHub,goPatrol,openMap,openInterro,openCellsView,openShop,newDetainee,get view(){return view;},get street3d(){return street3d;}};
+window.PATRULLA_DEBUG={get S(){return S;},get peds(){return peds;},get actors(){return actors;},get player(){return player;},pedModal,staffModal,openPanel,garageScreen,personalScreen,stationScreen,missionsScreen,profileScreen,get crimes(){return crimes;},get chase(){return chase;},forceChase(){chaseT=0;},startMission,openHub,closeHub,goPatrol,openMap,openInterro,openCellsView,openShop,newDetainee,get view(){return view;},get street3d(){return street3d;}};
 
 window.claude?.hot?.snapshot?.(()=>serialize());
 const start=data=>{ init(data&&typeof data.money==='number'?data:loadLocal()); $('b3dTxt').textContent=S.view3d?'Vista 2D':'Vista 3D'; openHub(cityAt(player.x,player.y)&&S.owned[cityAt(player.x,player.y).id]?cityAt(player.x,player.y):CBY.madrid); requestAnimationFrame(t=>{last=t;loop(t);}); };

@@ -16,7 +16,7 @@
 <div id="ui">
   <header class="topbar">
     <div class="profile">
-      <div class="ava" id="ava"></div>
+      <button class="ava" id="ava" aria-label="Tu perfil"></button>
       <div class="prof-txt">
         <div class="row"><div class="flag" title="España"></div><b>Jefe de Policía</b></div>
         <span class="lvl" id="pLvl">Nivel 1</span>
@@ -98,6 +98,7 @@
     <div class="dbtns">
       <button id="bRadio"><span class="ic" data-ico="radio"></span><span>Radio</span></button>
       <button id="bSiren"><span class="ic" data-ico="siren"></span><span>Sirena</span></button>
+      <button id="bHorn"><span class="ic" data-ico="horn"></span><span>Bocina</span></button>
       <button id="bVeh"><span class="ic" data-ico="car"></span><span>Cambiar vehículo</span></button>
       <button id="b3d"><span class="ic" data-ico="cam"></span><span id="b3dTxt">Vista 2D</span></button>
     </div>
@@ -105,13 +106,15 @@
   </div>
 
   <!-- mapa -->
+  <div class="chase" id="chaseBox" hidden><span class="ex">!</span><div><b>Misión activa</b><span>Persecución en curso</span><small>Detén al sospechoso</small></div><div class="timer" id="chaseT">01:30</div></div>
   <div class="mapside" id="mapMis"></div>
   <div class="mapcard" id="mapCard" hidden></div>
   <div class="wx" id="mapWx"></div>
 
   <!-- interrogatorio -->
   <div class="ivui" id="ivUI">
-    <div class="ivhead"><div class="ava" id="ivAva"></div><div><b>Interrogatorio</b><span id="ivName">Sospechoso: —</span></div></div>
+    <div class="ivtitle"><span class="ic" data-ico="people"></span><b>Interrogatorio</b></div>
+    <div class="ivcard"><div class="ivface" id="ivAva"></div><div class="ivmeta"><b id="ivName">—</b><span id="ivAge"></span><span id="ivCrime"></span></div></div>
     <div class="ivmenu" id="ivMenu"></div>
     <div class="ivpanel" id="ivPanel"></div>
     <div class="bubble" id="ivBubble" hidden></div>
@@ -124,6 +127,12 @@
   </div>
 </div>
 <canvas id="mapc" hidden></canvas>
+
+<div class="overlay scr" id="scr" hidden><div class="scrwrap">
+  <header><span class="ic" id="scrIco"></span><h2 id="scrTitle"></h2><div class="minipills" id="scrPills"></div><button id="scrClose">Cerrar</button></header>
+  <div class="scrbody" id="scrBody"></div>
+  <nav class="scrtabs" id="scrTabs"></nav>
+</div></div>
 
 <div class="overlay" id="shop" hidden><div class="shop">
   <header><span class="ic" data-ico="cart"></span><h2>Tienda / Garaje de patrullas</h2><span class="where" id="shopWhere"></span><button id="shopClose">Cerrar</button></header>

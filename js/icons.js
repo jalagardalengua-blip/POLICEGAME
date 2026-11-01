@@ -36,6 +36,9 @@ const I = {
   press: s(`<circle cx="24" cy="24" r="17" fill="none" stroke="#eef3ff" stroke-width="3.5"/><path d="M24 13v14" stroke="#ff8b97" stroke-width="4" stroke-linecap="round"/><circle cx="24" cy="33" r="2.6" fill="#ff8b97"/>`),
   deal: s(`<path d="M4 22l8-8 8 4 6-3 8 3 10 8-6 6-8-6-6 2-8 8-6-6z" fill="#eef3ff"/><path d="M20 28l4 4M24 24l5 5M28 21l5 5" stroke="#14234d" stroke-width="2"/>`),
   stop: s(`<path d="M24 6c6 3 12 5 16 5v11c0 9-7 15-16 20-9-5-16-11-16-20V11c4 0 10-2 16-5z" fill="#eef3ff"/><path d="M17 24l5 5 9-10" stroke="#14234d" stroke-width="3.5" fill="none" stroke-linecap="round"/>`),
+  horn: s(`<path d="M6 20h8l14-9v26l-14-9H6z" fill="#eef3ff"/><path d="M33 17c3 2 3 12 0 14M37 13c6 4 6 18 0 22" stroke="#ffc94a" stroke-width="3" fill="none" stroke-linecap="round"/>`),
+  user: s(`<circle cx="24" cy="15" r="8" fill="#eef3ff"/><path d="M8 42c0-10 7-16 16-16s16 6 16 16z" fill="#eef3ff"/>`),
+  wrench: s(`<path d="M30 6a10 10 0 00-9 14L7 34a4 4 0 006 6l14-14a10 10 0 0013-9l-6 3-5-5 3-6z" fill="#eef3ff"/>`),
   coin: s(`<circle cx="24" cy="24" r="18" fill="#ffc94a" stroke="#fff2c0" stroke-width="2"/><circle cx="24" cy="24" r="12" fill="none" stroke="#c99a1c" stroke-width="2.5"/>`),
 };
 const AVATAR = s(`<defs><linearGradient id="avbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d86c8"/><stop offset="1" stop-color="#1c3570"/></linearGradient></defs>
@@ -49,6 +52,7 @@ const AVATAR = s(`<defs><linearGradient id="avbg" x1="0" y1="0" x2="0" y2="1"><s
   <path d="M38 40l8-1M54 39l8 1" stroke="#2b1b12" stroke-width="2.4" stroke-linecap="round"/>
   <path d="M50 47v8h-3" stroke="#b9805c" stroke-width="2" fill="none"/><path d="M44 59c4 2 8 2 12 0" stroke="#8a4f3a" stroke-width="2" fill="none" stroke-linecap="round"/>
   <path d="M32 50c1 9 6 16 18 18 12-2 17-9 18-18-2 6-6 10-18 10s-16-4-18-10z" fill="#2b1b12" opacity=".35"/>`,'0 0 100 100');
+const SIL = s(`<defs><linearGradient id="silg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a63b8"/><stop offset="1" stop-color="#0b1636"/></linearGradient></defs><rect width="100" height="100" fill="url(#silg)"/><circle cx="50" cy="38" r="17" fill="#050b1c"/><path d="M14 100c2-26 16-38 36-38s34 12 36 38z" fill="#050b1c"/><path d="M33 31c2-12 32-12 34 0z" fill="#050b1c"/><rect x="31" y="28" width="38" height="5" rx="2" fill="#050b1c"/>`,'0 0 100 100');
 const ART = {
   garage: `<svg viewBox="0 0 280 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a4a6a"/><stop offset="1" stop-color="#121a2c"/></linearGradient><radialGradient id="gb" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#3d8bff" stop-opacity=".9"/><stop offset="1" stop-color="#3d8bff" stop-opacity="0"/></radialGradient></defs>
     <rect width="280" height="130" fill="url(#gg)"/>${[0,1,2,3,4,5].map(i=>`<rect x="${i*50}" y="0" width="30" height="8" fill="#e8efff" opacity=".7"/>`).join('')}
@@ -74,5 +78,5 @@ function fill(){
   document.querySelectorAll('[data-art]').forEach(el=>{ el.insertAdjacentHTML('afterbegin', el.dataset.art==='silhouette'?ART.silhouette:ART[el.dataset.art]); });
   const av=document.getElementById('ava'); if(av) av.innerHTML=AVATAR;
 }
-return {I, ART, AVATAR, fill};
+return {I, ART, AVATAR, SIL, fill};
 })();
