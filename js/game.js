@@ -90,7 +90,7 @@ const DECOR=[];
 const SAVEKEY='patrulla-espana-v2'; let UID=0;
 let S, player, actors=[], crimes=[], peds=[], floats=[], traffic=[], boats=[], raiders=[], truck=null, parts=[], drops=[];
 let padT=0, padCur=null, spawnT=2, saveT=0, hudT=0, pedT=0, hintMsg='', near=null, lastHour=0, weather={rain:0,target:0};
-function fresh(){ return {money:250,rep:50,time:0,owned:{madrid:{car:0,lvl:1}},up:{},custody:[],carry:[],mis:null,done:[],intel:0,solved:0,auto:false,seen:false,px:null,py:null,nid:1,staff:null,xp:0,stats:{legal:0,nulls:0,conv:0,free:0,earned:0,missions:0},log:[],unread:0,dayEarn:0,lastDay:null,lowfx:false,rainOn:true,fleet:[],view3d:true,siren:false}; }
+function fresh(){ return {money:250,rep:50,time:0,owned:{madrid:{car:0,lvl:1}},up:{},custody:[],carry:[],mis:null,done:[],intel:0,solved:0,auto:true,seen:false,px:null,py:null,nid:1,staff:null,xp:0,stats:{legal:0,nulls:0,conv:0,free:0,earned:0,missions:0},log:[],unread:0,dayEarn:0,lastDay:null,lowfx:false,rainOn:true,fleet:[],view3d:true,siren:false,carPos:null}; }
 const U=id=>S.up[id]||0;
 const VBY={}; VEHICLES.forEach(v=>VBY[v.id]=v);
 const fleetIn=(city,cat)=>S.fleet.filter(v=>(!city||v.city===city)&&(!cat||VBY[v.type].cat===cat));
@@ -114,7 +114,7 @@ const agCost=c=>Math.round(120*Math.pow(1.45,agN(c)-1));
 const carCost=c=>Math.round(300*Math.pow(1.5,S.owned[c].car));
 const lvlCost=c=>Math.round(900*Math.pow(2.4,(S.owned[c].lvl||1)-1));
 const lvlOf=st=>Math.min(5,1+Math.floor(st.xp/5));
-function serialize(){ if(player){ S.px=player.x; S.py=player.y; } return JSON.parse(JSON.stringify(S)); }
+function serialize(){ if(player){ S.px=player.x; S.py=player.y; S.inCar=player.inCar; } return JSON.parse(JSON.stringify(S)); }
 function saveLocal(){ try{ localStorage.setItem(SAVEKEY,JSON.stringify(serialize())); }catch(e){} }
 function loadLocal(){ try{ const s=localStorage.getItem(SAVEKEY); return s?JSON.parse(s):null; }catch(e){ return null; } }
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -146,7 +146,9 @@ function init(data){ ccars=[];
   const f=fresh();
   S=data&&typeof data.money==='number'?{...f,...data,up:{...(data.up||{})},stats:{...f.stats,...(data.stats||{})},owned:JSON.parse(JSON.stringify(data.owned||f.owned))}:f;
   migrate();
-  const m=CBY.madrid; player={x:S.px??m.x,y:S.py??m.y+60,ang:-Math.PI/2,walk:0,mode:'foot',vx:0,vy:0,spd:0,inCar:false,moving:false};
+  const m=CBY.madrid; player={x:S.px??m.x,y:S.py??m.y+60,ang:-Math.PI/2,camYaw:-Math.PI/2,walk:0,mode:'foot',vx:0,vy:0,spd:0,inCar:!!S.inCar,moving:false};
+  if(S.autoSet!==2){ S.auto=true; S.autoSet=2; }
+  if(!S.inCar&&!S.carPos) S.carPos={x:m.x+36,y:m.y+70,ang:0};
   actors=[]; crimes=[]; peds=[]; floats=[]; boats=[]; raiders=[]; truck=null; parts=[]; syncActors();
   traffic=[]; const R=rng(5); for(let i=0;i<90;i++) traffic.push({s:HW[Math.floor(R()*HW.length)],t:R(),dir:R()<.5?1:-1,sp:.02+R()*.03,col:`hsl(${Math.floor(R()*360)} ${40+R()*30}% ${50+R()*15}%)`,truck:R()<.2});
   lastHour=Math.floor(S.time);
@@ -286,10 +288,13 @@ function pedModal(p){
     if(p.tainted) p.log.push('La sanción no prosperará: la prueba se obtuvo sin indicios.'); else { earn(v); S.rep=Math.min(100,S.rep+1); p.log.push(`Se tramita la propuesta de sanción e intervienes el objeto. +${eur(v)}`); }
     pedModal(p); }});
   const full=S.carry.length>=carryCap();
-  acts.push({l:full?'Detener (esposas llenas)':'Leer derechos y detener',cls:'go',dis:full,fn:()=>arrestPed(p,true)});
+  const legal=(p.idChecked&&p.prof==='buscado')||(items&&items.kind==='delito');
+  acts.push({l:full?'Detener (esposas llenas)':'Leer derechos y detener',cls:legal?'go':'',dis:full,fn:()=>arrestPed(p,true)});
   if(!full) acts.push({l:'Detener sin leer derechos',cls:'bad',fn:()=>arrestPed(p,false)});
   acts.push({l:'Dejar marchar',fn:()=>{ p.stop=0; closeModal(); }});
-  openModal({title:'Control en la vía pública',html,acts});
+  const rec=!p.idChecked?'Identificar (pedir DNI)':(p.asked<1&&!p.ind)?'Preguntar qué hace aquí':(p.ind&&!p.searched)?'Cachear (hay indicios)':((p.idChecked&&p.prof==='buscado')||(items&&items.kind==='delito'))?'Leer derechos y detener':(items&&items.kind==='admin'&&!p.fined)?'Proponer sanción (LO 4/2015)':(dogAvailable()&&!p.dog&&!p.ind)?'Pasar al perro':'Dejar marchar';
+  acts.forEach(x=>{ if(x.l===rec&&!x.dis) x.cls=(x.cls?x.cls+' ':'')+'rec'; });
+  openModal({title:'Control en la vía pública',html:`<div class="pedhead"><div class="pface">${faceSVG2(p.lk,{cloth:p.body})}</div><div class="legal">Siguiente paso recomendado: <b>${rec}</b></div></div>`+html,acts,sheet:true});
 }
 function arrestPed(p,rights){
   const items=p.found, wanted=p.idChecked&&p.prof==='buscado', delito=items&&items.kind==='delito', c=CBY[p.city];
@@ -496,9 +501,27 @@ function misTarget(){
 }
 
 // ================= ENTRADA =================
-const keys=new Set(); let joy=null; const touchDrive={l:false,r:false,gas:false};
+const keys=new Set(); let joy=null, camDrag=null, camPitch=0; const touchDrive={l:false,r:false,gas:false};
 const paused=()=>!$('scr').hidden||!$('shop').hidden||!$('panel').hidden||!$('modal').hidden||!$('help').hidden||!$('confirm').hidden;
 const frozen=()=>!$('modal').hidden&&$('mTitle').textContent==='Pausa';
+function resolveByPlayer(cr){ followers().forEach(a=>a.st.xp++);
+  if(S.auto){ crimeDone(cr); const ds=crimeDetainees(cr,true,detBonus()); S.carry.push(...ds); S.stats.legal+=ds.length; addXP(8*ds.length); ds.forEach(()=>missionEvent('arrest',{city:cr.city,profile:'crimen'})); toast(`¡Alto, policía! ${ds.length} detenido(s) por ${cr.T.n.toLowerCase()}. Derechos leídos`); }
+  else crimeModal(cr); }
+function contextAction(){
+  const c=cityAt(player.x,player.y), cr=crimes.filter(k=>dist(k,player)<85).sort((p,q)=>dist(p,player)-dist(q,player))[0];
+  if(cr) return {label:'¡Alto, policía!',sub:cr.T.n,cls:'red',fn:()=>{ if(player.inCar) exitCar(); if(carryCap()-S.carry.length<cr.T.s){ toast('Esposas llenas: entrega antes a los detenidos',true); return; } AU()&&AU().horn(); resolveByPlayer(cr); }};
+  if(c&&S.owned[c.id]&&S.carry.length&&dist(player,c.drop)<140) return {label:'Entregar detenidos',sub:`${S.carry.length} a calabozos`,cls:'blue',fn:()=>{ const n=dropAt(c,S); if(n){ AU()&&AU().cash(); toast(`${n} detenido(s) entregados en los calabozos`); } if(S.carry.length) toast('Calabozos llenos: pasa detenidos al juez o amplíalos',true); }};
+  { const opts=[];
+    if(!player.inCar&&S.carPos&&dist(player,S.carPos)<50) opts.push([dist(player,S.carPos),{label:'Subir al coche',sub:'Coche patrulla',cls:'blue',fn:enterCar}]);
+    if(near&&near.kind==='ped'&&player.mode==='foot'){ const r=near.ref; opts.push([dist(player,pedPos(r)),{label:'Dar el alto',sub:'Control en la vía pública',fn:()=>pedModal(r)}]); }
+    if(near&&near.kind==='staff'&&player.mode==='foot'){ const r=near.ref; opts.push([dist(player,r)+8,{label:'Dar órdenes',sub:r.st.name,fn:()=>staffModal(r.st)}]); }
+    if(opts.length){ opts.sort((x,y)=>x[0]-y[0]); return opts[0][1]; } }
+  if(c&&S.owned[c.id]&&inPlaza(c,player.x,player.y,10)) return {label:'Entrar en comisaría',sub:c.n,cls:'blue',fn:()=>openHub(c)};
+  if(c&&!S.owned[c.id]&&inPlaza(c,player.x,player.y,10)) return {label:'Abrir comisaría',sub:eur(c.cost),cls:'blue',fn:()=>{ if(S.money<c.cost){ toast(`Te faltan ${eur(c.cost-S.money)}`,true); return; } S.money-=c.cost; S.owned[c.id]={car:0,lvl:1}; newStaff('jefe',c.id); newStaff('agente',c.id); syncActors(); addXP(60,'nueva comisaría'); toast('Nueva comisaría: '+c.n); saveLocal(); }};
+  if(player.inCar&&Math.abs(player.spd)<40&&land(player.x,player.y)) return {label:'Bajar del coche',sub:'Continuar a pie',fn:exitCar};
+  return null;
+}
+let ctxNow=null;
 function interact(){ if(!near) return; if(player.inCar&&cityAt(player.x,player.y)){ player.inCar=false; toast('Bajas del coche'); } if(near.kind==='ped') pedModal(near.ref); else staffModal(near.ref.st); }
 addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
@@ -507,7 +530,8 @@ addEventListener('keydown',e=>{
   if(k==='escape'&&$('modal').hidden&&$('panel').hidden&&(view==='interro'||view==='cells'||view==='map')){ if(view==='interro') endInterro(); else if(view==='map') goPatrol(); else openHub(hubCity||homeCity()); return; }
   if(k==='escape'){ if(!$('modal').hidden){ const p=peds.find(x=>x.stop>999); if(p) p.stop=0; closeModal(); } else if(!$('panel').hidden) $('panel').hidden=true; return; }
   if(paused()) return;
-  if(k==='e'){ if(view==='hub'){ goPatrol(); return; } if(view!=='patrol') return; if(near) interact(); else if(stationHere()) openHub(stationHere()); else openPanel(); return; }
+  if(k==='e'||k===' '){ if(view==='hub'){ goPatrol(); return; } if(view!=='patrol') return; const a=contextAction(); if(a) a.fn(); e.preventDefault(); return; }
+  if(k==='f'&&view==='patrol'){ toggleVeh(); return; }
   if(k==='v'&&view==='patrol'){ toggle3D(); return; }
   if(k==='c'&&view==='patrol'){ toggleVeh(); return; }
   if(k==='m'){ missionsScreen(); return; }
@@ -531,6 +555,7 @@ C.addEventListener('pointerup',endJoy); C.addEventListener('pointercancel',endJo
 function inputDir(){
   let dx=0,dy=0; if(inHub) return [0,0];
   if(touchDrive.l) dx-=1; if(touchDrive.r) dx+=1; if(touchDrive.gas) dy-=1;
+  if(street3d&&player.mode==='foot'){ if(keys.has('q')) player.camYaw=(player.camYaw??player.ang)-.04; if(keys.has('r')) player.camYaw=(player.camYaw??player.ang)+.04; }
   if(keys.has('w')||keys.has('arrowup')) dy-=1; if(keys.has('s')||keys.has('arrowdown')) dy+=1;
   if(keys.has('a')||keys.has('arrowleft')) dx-=1; if(keys.has('d')||keys.has('arrowright')) dx+=1;
   if(joy){ const jx=joy.x-joy.ox, jy=joy.y-joy.oy, d=Math.hypot(jx,jy); if(d>6){ const m=Math.min(1,d/55); dx=jx/d*m; dy=jy/d*m; } }
@@ -603,28 +628,39 @@ function update(dt){
   if(Math.floor(S.time)!==lastHour){ lastHour=Math.floor(S.time); hourTick(); }
   weather.rain+=(weather.target-weather.rain)*Math.min(1,dt*.3);
   const here=cityAt(player.x,player.y);
-  player.mode=!land(player.x,player.y)?'boat':here?(player.inCar?'car':'foot'):'car';
+  player.mode=!land(player.x,player.y)?'boat':player.inCar?'car':'foot';
   const hw=player.mode==='car'&&onHighway(player.x,player.y);
-  if(street3d) pSpeed=player.mode==='foot'?120*(1+.12*U('bot')):270*(1+.12*U('mot'))*(S.siren?1.15:1);
+  if(street3d) pSpeed=player.mode==='foot'?(here?125:150)*(1+.12*U('bot')):player.mode==='car'?(here?280:470)*(1+.12*U('mot'))*(hw?1.25:1)*(S.siren?1.15:1):320;
   else pSpeed=player.mode==='foot'?190*(1+.12*U('bot')):player.mode==='car'?(here?300:430)*(1+.12*U('mot'))*(hw?1.35:1)*(S.siren?1.15:1):330;
   const [dx,dy]=inputDir();
   const ok=(x,y)=>x>20&&y>20&&x<W-20&&y<H-20&&(land(x,y)||U('mar'))&&(streetOK(x,y)||!streetOK(player.x,player.y));
-  const blocked=()=>{ hintMsg=land(player.x,player.y)&&!U('mar')&&player.mode!=='boat'?'No puedes atravesar edificios ni salir al mar sin la Unidad marítima':'Necesitas la Unidad marítima para salir al mar'; };
+  const blocked=()=>{ hintMsg=!land(player.x,player.y)||U('mar')?'':'No puedes atravesar edificios ni entrar en el mar sin la Unidad marítima'; };
   player.moving=false;
-  if(street3d){
+  if(street3d&&player.mode!=='foot'){
+    // conducción: arriba acelera, abajo frena o marcha atrás, izquierda y derecha giran
     const thr=-dy, steer=dx;
-    if(player.mode==='car'){ player.spd+=(thr*pSpeed-player.spd)*Math.min(1,dt*(thr?2.2:2.8)); if(Math.abs(player.spd)>8) player.ang+=steer*dt*2.1*Math.sign(player.spd); }
-    else { player.spd=thr*pSpeed; player.ang+=steer*dt*3; }
-    if(Math.abs(player.spd)>2){ player.moving=true; player.walk+=dt*Math.abs(player.spd)/14;
+    player.spd+=(thr*pSpeed-player.spd)*Math.min(1,dt*(thr?1.8:2.6)); if(Math.abs(player.spd)>8) player.ang+=steer*dt*2.2*Math.sign(player.spd)*Math.min(1,Math.abs(player.spd)/120);
+    if(Math.abs(player.spd)>2){ player.moving=true;
       const nx=player.x+Math.cos(player.ang)*player.spd*dt, ny=player.y+Math.sin(player.ang)*player.spd*dt;
       let moved=false; if(ok(nx,ny)){ player.x=nx; player.y=ny; moved=true; } else if(ok(nx,player.y)){ player.x=nx; moved=true; } else if(ok(player.x,ny)){ player.y=ny; moved=true; }
       if(!moved){ player.spd*=-.25; blocked(); } }
+    player.camYaw=player.ang;
+  } else if(street3d){
+    // a pie: te mueves hacia donde empujas, según la cámara
+    const yaw=player.camYaw??player.ang, m=Math.min(1,Math.hypot(dx,dy));
+    if(m>.05){ const mx=Math.cos(yaw)*(-dy)-Math.sin(yaw)*dx, my=Math.sin(yaw)*(-dy)+Math.cos(yaw)*dx, l=Math.hypot(mx,my)||1;
+      player.ang=Math.atan2(my,mx); player.spd=pSpeed*m; player.moving=true; player.walk+=dt*m*11;
+      const nx=player.x+mx/l*player.spd*dt, ny=player.y+my/l*player.spd*dt;
+      if(ok(nx,player.y)) player.x=nx; else blocked(); if(ok(player.x,ny)) player.y=ny; else blocked();
+      if(-dy>.3&&!camDrag){ let d=player.ang-yaw; d=Math.atan2(Math.sin(d),Math.cos(d)); player.camYaw=yaw+d*Math.min(1,dt*1.6); } }
+    else player.spd=0;
   } else {
     player.spd=(dx||dy)?pSpeed*Math.min(1,Math.hypot(dx,dy)):0;
     if(dx||dy){ player.ang=Math.atan2(dy,dx); player.walk+=dt*10; player.moving=true;
       const nx=player.x+dx*pSpeed*dt, ny=player.y+dy*pSpeed*dt;
       if(ok(nx,player.y)) player.x=nx; else blocked();
       if(ok(player.x,ny)) player.y=ny; else blocked(); }
+    player.camYaw=player.ang;
   }
   if(player.moving&&player.mode==='car'&&!street3d&&Math.random()<.5) parts.push({x:player.x-Math.cos(player.ang)*16,y:player.y-Math.sin(player.ang)*16,vx:(Math.random()-.5)*20,vy:(Math.random()-.5)*20,t:0,life:.8,k:'dust'});
   if(player.moving&&player.mode==='boat') parts.push({x:player.x-Math.cos(player.ang)*20,y:player.y-Math.sin(player.ang)*20,vx:0,vy:0,t:0,life:1.4,k:'wake'});
@@ -872,6 +908,7 @@ function draw(){
   for(const k of ccars){ const q=carPos(k); if(vis(q.x,q.y)) drawCar(q.x,q.y,carAng(k),{c1:k.col,c2:k.col}); }
   if(roadblock&&vis(roadblock.x,roadblock.y)){ const ra=roadblock.ang+Math.PI/2; for(let i=-1;i<=1;i+=2) drawCar(roadblock.x+Math.cos(ra)*i*12,roadblock.y+Math.sin(ra)*i*12,ra,{c1:'#e7ebf3',c2:'#fff',stripe:'#1d4fb0',siren:true}); ctx.fillStyle='#ff8a1c'; for(let i=-2;i<=2;i++){ ctx.beginPath(); ctx.arc(roadblock.x+Math.cos(ra)*i*8-Math.cos(roadblock.ang)*14,roadblock.y+Math.sin(ra)*i*8-Math.sin(roadblock.ang)*14,3,0,7); ctx.fill(); } }
   if(chase&&vis(chase.x,chase.y)){ drawCar(chase.x,chase.y,carAngOf(chase),{c1:'#b3121f',c2:'#e0303d'}); ctx.beginPath(); ctx.arc(chase.x,chase.y,30+Math.sin(now/120)*5,0,7); ctx.strokeStyle='#ff3b4e'; ctx.lineWidth=3; ctx.stroke(); }
+  if(!player.inCar&&S.carPos&&vis(S.carPos.x,S.carPos.y)) drawCar(S.carPos.x,S.carPos.y,S.carPos.ang,{c1:'#e7ebf3',c2:'#ffffff',stripe:'#c99a1c'});
   for(const a of actors) if(a.visible&&vis(a.x,a.y)) drawActor(a);
   for(const p of parts){ if(!vis(p.x,p.y)) continue; const k=p.t/p.life;
     if(p.k==='dust'){ ctx.fillStyle=`rgba(200,190,160,${.35*(1-k)})`; ctx.beginPath(); ctx.arc(p.x,p.y,3+k*8,0,7); ctx.fill(); }
@@ -1056,7 +1093,22 @@ function drawMini(){
 
 // ================= HUD =================
 function homeCity(){ const c=cityAt(player.x,player.y); if(c&&S.owned[c.id]) return c; let best=null,bd=1e12; for(const id in S.owned){ const x=CBY[id], d=dist(player,x); if(d<bd){bd=d;best=x;} } return best; }
-function hud(){
+function updateStreetHud(){
+  const a=contextAction(); ctxNow=a; const b=$('ctx');
+  b.hidden=view!=='patrol'||!a||paused(); if(a){ b.className='ctx '+(a.cls||''); $('ctxL').textContent=a.label; $('ctxS').textContent=a.sub||''; }
+  // brújula de objetivo
+  let tg=null, lab='';
+  const mt=misTarget(); if(chase){ tg=chase; lab='Persecución'; } else if(mt){ tg=mt; lab=stepText(curStep()); }
+  else { const c=cityAt(player.x,player.y); const cr=crimes.filter(k=>!c||k.city===c.id).sort((p,q)=>dist(p,player)-dist(q,player))[0]; if(cr){ tg=cr; lab='Aviso: '+cr.T.n; } else if(S.wp&&CBY[S.wp]){ tg=CBY[S.wp]; lab='Ruta a '+CBY[S.wp].n; } }
+  const ob=$('obj'); ob.hidden=view!=='patrol'||!street3d||!tg;
+  if(tg){ const d=dist(player,tg), ang=Math.atan2(tg.y-player.y,tg.x-player.x)-(player.camYaw??player.ang);
+    $('objA').style.transform=`rotate(${ang*180/Math.PI}deg)`; $('objT').textContent=lab; $('objD').textContent=d<4000?Math.max(10,Math.round(d*.25/10)*10)+' m':Math.round(d/K*85)+' km'; }
+  // joystick visible
+  const jb=$('joy'); if(joy&&street3d){ jb.hidden=false; jb.style.left=(joy.ox-55)+'px'; jb.style.top=(joy.oy-55)+'px'; const jx=joy.x-joy.ox, jy=joy.y-joy.oy, d=Math.hypot(jx,jy), k=d>45?45/d:1; $('joyK').style.transform=`translate(${jx*k}px,${jy*k}px)`; }
+  else if(street3d&&matchMedia('(pointer:coarse)').matches){ jb.hidden=false; jb.style.left=''; jb.style.top=''; $('joyK').style.transform=''; } else jb.hidden=true;
+  $('speedo').hidden=!(street3d&&player.mode!=='foot');
+}
+function hud(){ updateStreetHud();
   const L=lvlFromXp(S.xp), a=50*(L-1)**2, b=50*L*L;
   $('pLvl').textContent='Nivel '+L; $('pXpBar').style.width=Math.min(100,(S.xp-a)/(b-a)*100)+'%'; $('pXp').textContent=`XP ${fmt(S.xp)} / ${fmt(b)}`;
   $('hMoney').textContent=eur(S.money); $('hRep').textContent=Math.round(S.rep); $('hIntel').textContent=S.intel;
@@ -1117,37 +1169,59 @@ const groundCache=new Map();
 function groundCanvas(c){ let g=groundCache.get(c.id); if(g) return g;
   const R=c.r+70, size=Math.ceil(2*R*CS), cv=document.createElement('canvas'); cv.width=cv.height=size; const x=cv.getContext('2d');
   const wv=document.createElement('canvas'); wv.width=wv.height=8; const wg=wv.getContext('2d');
-  x.fillStyle='#4a5d3e'; x.fillRect(0,0,size,size);
   x.setTransform(CS,0,0,CS,-(c.x-R)*CS,-(c.y-R)*CS); x.save(); x.clip(LANDALL); paintCity(c,x,wg,true); x.restore();
   groundCache.set(c.id,cv); return cv; }
 function cityData(c){ return {id:c.id,x:c.x,y:c.y,r:c.r,blocks:c.blocks,plaza:c.plaza,drop:c.drop,owned:!!S.owned[c.id],lvl:S.owned[c.id]?S.owned[c.id].lvl||1:1,ground:groundCanvas(c)}; }
+let WORLD3D=null;
+function worldData(){ if(WORLD3D) return WORLD3D;
+  const w=3072, h=Math.round(w*H/W), cv=document.createElement('canvas'); cv.width=w; cv.height=h; const g=cv.getContext('2d'), k=w/W; g.scale(k,k);
+  g.fillStyle='#1d4a75'; g.fillRect(0,0,W,H); g.lineJoin='round';
+  g.strokeStyle='rgba(70,150,180,.55)'; g.lineWidth=140; g.stroke(LANDALL); g.strokeStyle='#d9c48f'; g.lineWidth=46; g.stroke(OWNPATH);
+  for(const key in PATHS){ g.fillStyle=OWNLAND.includes(key)?'#5a6f45':'#545a4c'; g.fill(PATHS[key]); }
+  g.save(); g.clip(LANDALL);
+  for(const m of MOUNT){ const gr=g.createRadialGradient(m.x,m.y,0,m.x,m.y,m.r); gr.addColorStop(0,m.snow?'rgba(235,238,240,.8)':'rgba(130,112,82,.6)'); gr.addColorStop(.5,'rgba(110,100,72,.35)'); gr.addColorStop(1,'rgba(90,90,60,0)'); g.fillStyle=gr; g.beginPath(); g.ellipse(m.x,m.y,m.r,m.r*.7,0,0,7); g.fill(); }
+  for(const d of DECOR) if(d.k==='field'||d.k==='olive'||d.k==='vine'||d.k==='scrub') drawDecor(g,d);
+  g.strokeStyle='#3d78a8'; g.lineWidth=26; g.lineCap='round'; for(const p of RIVERP) g.stroke(p);
+  g.restore();
+  for(const c of CITIES){ g.fillStyle='#5d626e'; g.beginPath(); g.arc(c.x,c.y,c.r+40,0,7); g.fill(); }
+  const trees=[];
+  for(const d of DECOR){ if(d.k==='forest') d.trees.slice(0,7).forEach(t=>trees.push({x:d.x+t.x,y:d.y+t.y,s:.6+t.r/16}));
+    else if(d.k==='olive'){ for(let i=0;i<4;i++) trees.push({x:d.x+(i%2-.5)*30,y:d.y+(Math.floor(i/2)-.5)*30,s:.4}); }
+    else if(d.k==='scrub') trees.push({x:d.x,y:d.y,s:.35}); }
+  const hw=HW.map(s2=>{ const dx=s2.b.x-s2.a.x, dy=s2.b.y-s2.a.y, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L;
+    return {ax:s2.a.x+ux*(s2.a.r+30),ay:s2.a.y+uy*(s2.a.r+30),bx:s2.b.x-ux*(s2.b.r+30),by:s2.b.y-uy*(s2.b.r+30)}; });
+  WORLD3D={ground:cv,W,H,hw,trees,cities:CITIES.map(c=>({id:c.id,x:c.x,y:c.y,r:c.r}))}; return WORLD3D; }
 function updateStreet(){
   if(view!=='patrol') return;
-  const c=cityAt(player.x,player.y);
-  const want=S.view3d&&window.PE_HUB&&PE_HUB.available()&&c&&player.mode!=='boat';
-  if(want){ if(PE_HUB.openStreet(cityData(c))){ if(!street3d){ street3d=true; document.body.classList.add('street'); C.style.visibility='hidden'; player.spd=0; } PE_HUB.syncStreet(streetState()); return; } }
-  if(street3d||(!want&&PE_HUB&&PE_HUB.mode()==='street')){ street3d=false; document.body.classList.remove('street'); if(window.PE_HUB) PE_HUB.close(); C.style.visibility='visible'; }
+  const want=S.view3d&&window.PE_HUB&&PE_HUB.available();
+  if(want){
+    if(!street3d){ if(!PE_HUB.openStreet(worldData())){ S.view3d=false; return; } street3d=true; document.body.classList.add('street'); C.style.visibility='hidden'; player.spd=0; player.camYaw=player.ang; }
+    const c=CITIES.find(k=>Math.hypot(player.x-k.x,player.y-k.y)<k.r+700)||null;
+    PE_HUB.setCity(c?cityData(c):null); PE_HUB.syncStreet(streetState()); return; }
+  if(street3d){ street3d=false; document.body.classList.remove('street'); if(window.PE_HUB) PE_HUB.close(); C.style.visibility='visible'; }
 }
 function streetState(){
   const R2=950*950, nearP=o=>(o.x-player.x)**2+(o.y-player.y)**2<R2;
   const actorsS=actors.filter(a=>a.visible&&nearP(a)).map(a=>{ const R=ROLES[a.st.role], drive=a.veh&&a.st.order==='patrulla'&&(a.state==='go'||a.state==='ret');
     return {id:a.st.id,x:a.x,y:a.y,ang:a.ang,veh:drive?a.veh:null,siren:a.state==='go',walk:a.walk,moving:true,look:{body:R.body,skin:a.st.look.skin,hair:a.st.look.hair,long:a.st.look.long,cap:R.hat,vest:R.hat?'#0c0f16':null,legs:'#141a28'}}; });
   const pedsS=peds.filter(p=>nearP(p)).map(p=>{ const q=pedPos(p); return {id:p.uid,x:q.x,y:q.y,ang:pedAng(p),walk:p.walk,body:p.body,skin:p.lk.skin,hair:p.lk.hair,long:p.lk.long,sus:p.showSus>0,stopped:p.stop>0}; });
-  const crimesS=crimes.filter(nearP).map(c=>({id:c.uid,x:c.x,y:c.y,people:c.looks.slice(0,c.T.s)}));
+  const crimesS=crimes.filter(nearP).map(c=>({id:c.uid,x:c.x,y:c.y,label:c.T.n,people:c.looks.slice(0,c.T.s)}));
   const raidS=raiders.map(r=>({id:r.uid,x:r.x,y:r.y,ang:r.ang,walk:r.walk,look:r.lk}));
   const markers=[]; const st=curStep();
   if(st&&st.t==='inspect'){ const c=CBY[st.city], done=S.mis.d.done||[]; st.pts.forEach((p,i)=>{ if(!done.includes(i)) markers.push({key:st.city+i,x:c.x+p[0],y:c.y+p[1],label:st.names[i]}); }); }
   if(st&&st.t==='raid'&&!S.mis.d.spawned){ const P=stepPoint(st); markers.push({key:'raid'+st.city,x:P.x,y:P.y,label:'Registro'}); }
   const carsS=ccars.filter(k=>nearP(k)).map(k=>{ const q=carPos(k); return {id:k.uid,x:q.x,y:q.y,ang:carAng(k),col:k.col}; });
-  if(chase&&chase.kind==='city') carsS.push({id:'chase'+chase.uid,x:chase.x,y:chase.y,ang:carAng(chase),col:'#c4121f',flee:true});
-  let camD=player.mode==='foot'?26:44; { const ca=Math.cos(player.ang), sa=Math.sin(player.ang); for(let d=4;d<=camD;d+=3){ if(!streetOK(player.x-ca*d,player.y-sa*d)){ camD=Math.max(6,d-4); break; } } }
+  if(chase) carsS.push({id:'chase'+chase.uid,x:chase.x,y:chase.y,ang:carAngOf(chase),col:'#c4121f',flee:true});
+  for(const t of traffic){ const s2=t.s, x=s2.a.x+(s2.b.x-s2.a.x)*t.t, y=s2.a.y+(s2.b.y-s2.a.y)*t.t; if((x-player.x)**2+(y-player.y)**2>2200*2200) continue;
+    const a=Math.atan2(s2.b.y-s2.a.y,s2.b.x-s2.a.x)+(t.dir<0?Math.PI:0); carsS.push({id:'hw'+traffic.indexOf(t),x:x-Math.sin(a)*12,y:y+Math.cos(a)*12,ang:a,col:t.col,truck:t.truck}); }
+  let camD=player.mode==='foot'?28:44; { const cy=player.mode==='foot'?(player.camYaw??player.ang):player.ang, ca=Math.cos(cy), sa=Math.sin(cy); for(let d=4;d<=camD;d+=3){ if(!streetOK(player.x-ca*d,player.y-sa*d)){ camD=Math.max(6,d-4); break; } } }
   const nearKey=near?(near.kind==='ped'?'p'+near.ref.uid:'a'+near.ref.st.id):null;
-  return {camD:camD*.25,nearKey,cars:carsS,player:{x:player.x,y:player.y,ang:player.ang,mode:player.mode==='foot'?'foot':'car',siren:S.siren,walk:player.walk,moving:player.moving},actors:actorsS,peds:pedsS,crimes:crimesS,raiders:raidS,markers,hour:hourOfDay(),rain:weather.rain>.4};
+  return {camD:camD*.25,camYaw:player.camYaw,camPitch:camPitch,parked:!player.inCar&&S.carPos?S.carPos:null,roadblock,nearKey,cars:carsS,player:{x:player.x,y:player.y,ang:player.ang,mode:player.mode,siren:S.siren,walk:player.walk,moving:player.moving},actors:actorsS,peds:pedsS,crimes:crimesS,raiders:raidS,markers,hour:hourOfDay(),rain:weather.rain>.4};
 }
 function radioModal(){
   AU()&&AU().radio(); const c=cityAt(player.x,player.y)||homeCity(); const list=crimes.filter(x=>x.city===c.id).sort((p,q)=>dist(p,player)-dist(q,player));
   openModal({title:'Radio · Central de '+c.n,html:list.length?`<ul class="log">${list.map(x=>`<li>${x.T.n} (${x.T.art}) a ${Math.round(dist(x,player)/K*85000/10)*10} m · ${eur(x.reward)} · ${x.taken?'unidad en camino':'sin asignar'}</li>`).join('')}</ul>`:'<div class="note">Sin avisos en la zona. Buen trabajo.</div>',
-    acts:[...(chase&&chase.kind==='hw'?[{l:roadblock?'Control ya montado':'Pedir control de carretera (200 €)',cls:'go',dis:!!roadblock,fn:()=>{ closeModal(); requestRoadblock(); }}]:[]),{l:'Desplegar unidades',fn:()=>{ closeModal(); doAction('deploy'); }},{l:'Pedir refuerzos',fn:()=>{ closeModal(); doAction('backup'); }},{l:'Avisos de la central',fn:mailModal},{l:'Cerrar',cls:'go',fn:closeModal}]});
+    acts:[...(chase&&chase.kind==='hw'?[{l:roadblock?'Control ya montado':'Pedir control de carretera (200 €)',cls:'go',dis:!!roadblock,fn:()=>{ closeModal(); requestRoadblock(); }}]:[]),{l:'Traer mi coche patrulla',fn:()=>{ closeModal(); callCar(); }},{l:'Desplegar unidades',fn:()=>{ closeModal(); doAction('deploy'); }},{l:'Pedir refuerzos',fn:()=>{ closeModal(); doAction('backup'); }},{l:'Avisos de la central',fn:mailModal},{l:'Cerrar',cls:'go',fn:closeModal}]});
 }
 
 // ---------- mapa de España ----------
@@ -1500,7 +1574,7 @@ function trophyModal(){
 function pauseModal(){ openModal({title:'Pausa',html:`<div class="note">El tiempo está detenido.</div>`,acts:[{l:'Continuar',cls:'go',fn:closeModal},{l:'Ajustes',fn:settingsModal}]}); }
 
 // ================= PANEL Y MODALES =================
-function openModal({title,html,acts}){
+function openModal({title,html,acts,sheet}){ $('modal').classList.toggle('sheetmode',!!sheet);
   $('mTitle').textContent=title; $('mBody').innerHTML=html; const A=$('mActs'); A.innerHTML='';
   acts.forEach(a=>{ const b=document.createElement('button'); b.textContent=a.l; if(a.cls) b.className=a.cls; if(a.dis) b.disabled=true; b.onclick=a.fn; A.appendChild(b); });
   $('modal').hidden=false; keys.clear(); joy=null; const f=A.querySelector('button:not(:disabled)'); if(f) f.focus();
@@ -1615,22 +1689,33 @@ $('bYes').onclick=()=>{ try{localStorage.removeItem(SAVEKEY);}catch(e){} init({.
 $('bPatrol').onclick=()=>goPatrol();
 $('bMail').onclick=mailModal; $('bTrophy').onclick=trophyModal; $('bSettings').onclick=settingsModal; $('bPause').onclick=pauseModal;
 $('zIn').onclick=()=>{ mmZoom=Math.max(900,mmZoom/1.6); drawMini(); }; $('zOut').onclick=()=>{ mmZoom=Math.min(16000,mmZoom*1.6); drawMini(); };
-document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{ const g=b.dataset.go;
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{ const g=b.dataset.go; document.body.classList.remove('menuopen');
   if(g==='hub') openHub(); else if(g==='map') openMap(); else if(g==='shop') garageScreen(); else if(g==='cells') openCellsView(); else if(g==='interro') openInterro(); else if(g==='mis') missionsScreen(); else if(g==='pla') personalScreen(); else if(g==='com') stationScreen(); else openPanel(g); }));
 $('shopClose').onclick=()=>{ $('shop').hidden=true; };
 $('fleetUp').onclick=()=>{ const c=homeCity(), cost=lvlCost(c.id); if(S.money>=cost&&(S.owned[c.id].lvl||1)<3){ S.money-=cost; S.owned[c.id].lvl=(S.owned[c.id].lvl||1)+1; toast(`Comisaría de ${c.n} ampliada a nivel ${S.owned[c.id].lvl}: más garaje y más plazas`); saveLocal(); renderShop(); } };
 $('mapc').addEventListener('click',mapClick);
-function toggle3D(){ S.view3d=!S.view3d; $('b3dTxt').textContent=S.view3d?'Vista 2D':'Vista 3D'; if(!S.view3d&&street3d){ street3d=false; document.body.classList.remove('street'); PE_HUB.close(); C.style.visibility='visible'; } toast(S.view3d?'Vista 3D en las ciudades':'Vista de mapa'); saveLocal(); }
-function toggleVeh(){ if(!cityAt(player.x,player.y)){ toast('Fuera de la ciudad vas siempre en coche'); return; } player.inCar=!player.inCar; player.spd=0; toast(player.inCar?'Subes al coche patrulla':'Bajas del coche'); }
-$('b3d').onclick=toggle3D; $('ava').onclick=profileScreen; $('scrClose').onclick=()=>{ $('scr').hidden=true; };
+function toggle3D(){ S.view3d=!S.view3d; $('b3dTxt').textContent=S.view3d?'Mapa 2D':'Vista 3D'; if(!S.view3d&&street3d){ street3d=false; document.body.classList.remove('street'); PE_HUB.close(); C.style.visibility='visible'; } toast(S.view3d?'Vista 3D en las ciudades':'Vista de mapa'); saveLocal(); }
+function exitCar(){ if(!player.inCar) return; if(!land(player.x,player.y)){ toast('No puedes bajarte en el mar',true); return; }
+  S.carPos={x:player.x,y:player.y,ang:player.ang}; player.inCar=false; player.spd=0;
+  const sx=Math.cos(player.ang+Math.PI/2)*16, sy=Math.sin(player.ang+Math.PI/2)*16; if(land(player.x+sx,player.y+sy)){ player.x+=sx; player.y+=sy; }
+  player.camYaw=player.ang; toast('Bajas del coche. Pulsa el botón de acción junto a él para volver a subir'); }
+function enterCar(){ if(!S.carPos) return; player.x=S.carPos.x; player.y=S.carPos.y; player.ang=S.carPos.ang; player.camYaw=player.ang; S.carPos=null; player.inCar=true; player.spd=0; toast('Subes al coche patrulla'); }
+function callCar(){ if(player.inCar){ toast('Ya vas en el coche'); return; } const a=player.ang; let x=player.x+Math.cos(a)*30, y=player.y+Math.sin(a)*30; if(!land(x,y)||!streetOK(x,y)){ x=player.x; y=player.y; }
+  S.carPos={x,y,ang:a}; toast('Un compañero te acerca el coche patrulla'); }
+function toggleVeh(){ if(player.inCar) exitCar(); else if(S.carPos&&dist(player,S.carPos)<60) enterCar(); else toast(S.carPos?'Tu coche está lejos. Pídelo por radio o acércate a él':'Pide tu coche por radio',true); }
+$('b3d').onclick=toggle3D; $('ctx').onclick=()=>{ const a=contextAction(); if(a) a.fn(); }; $('bMenu').onclick=()=>document.body.classList.toggle('menuopen'); $('ava').onclick=profileScreen; $('scrClose').onclick=()=>{ $('scr').hidden=true; };
 $('bHorn').onclick=()=>{ AU()&&AU().horn(); peds.forEach(p=>{ if(dist(p,player)<220){ p.stop=Math.max(p.stop,1); p.dir*=-1; } }); ccars.forEach(k=>{ if(dist(k,player)<220) k.wait=Math.max(k.wait,.8); }); toast('¡Piiii!'); }; $('bVeh').onclick=toggleVeh; $('bRadio').onclick=radioModal;
 $('bSiren').onclick=()=>{ S.siren=!S.siren; $('bSiren').classList.toggle('on',S.siren); if(S.siren){ peds.forEach(p=>{ if(dist(p,player)<200) p.stop=Math.max(p.stop,1.5); }); toast('Sirena encendida: abren paso y vas más rápido'); } };
 const hold=(id,k)=>{ const b=$(id); const on=e=>{ e.preventDefault(); touchDrive[k]=true; b.classList.add('on'); }, off=()=>{ touchDrive[k]=false; b.classList.remove('on'); };
   b.addEventListener('pointerdown',on); b.addEventListener('pointerup',off); b.addEventListener('pointerleave',off); b.addEventListener('pointercancel',off); };
 hold('stL','l'); hold('stR','r'); hold('pedal','gas');
-$('hub3d').addEventListener('pointerdown',e=>{ if(view!=='patrol') return; $('hub3d').setPointerCapture(e.pointerId); joy={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:e.clientX,y:e.clientY}; });
-$('hub3d').addEventListener('pointermove',e=>{ if(joy&&joy.id===e.pointerId){ joy.x=e.clientX; joy.y=e.clientY; } });
-$('hub3d').addEventListener('pointerup',e=>{ if(joy&&joy.id===e.pointerId) joy=null; }); $('hub3d').addEventListener('pointercancel',()=>{ joy=null; });
+$('hub3d').addEventListener('pointerdown',e=>{ if(view!=='patrol') return; $('hub3d').setPointerCapture(e.pointerId);
+  const left=e.pointerType!=='mouse'?e.clientX<innerWidth*.5:e.button===0&&!e.shiftKey&&false;
+  if(left) joy={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:e.clientX,y:e.clientY}; else camDrag={id:e.pointerId,x:e.clientX,y:e.clientY}; });
+$('hub3d').addEventListener('pointermove',e=>{ if(joy&&joy.id===e.pointerId){ joy.x=e.clientX; joy.y=e.clientY; }
+  else if(camDrag&&camDrag.id===e.pointerId){ player.camYaw=(player.camYaw??player.ang)+(e.clientX-camDrag.x)*.008; camPitch=Math.max(-1.5,Math.min(4,camPitch+(e.clientY-camDrag.y)*.02)); camDrag.x=e.clientX; camDrag.y=e.clientY; } });
+const upPtr=e=>{ if(joy&&joy.id===e.pointerId) joy=null; if(camDrag&&camDrag.id===e.pointerId) camDrag=null; };
+$('hub3d').addEventListener('pointerup',upPtr); $('hub3d').addEventListener('pointercancel',upPtr);
 addEventListener('resize',()=>{ if(view==='map') drawMapView(); });
 document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openPanel(b.dataset.open)));
 document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>doAction(b.dataset.act)));
@@ -1642,6 +1727,6 @@ if(window.PE_ICONS) PE_ICONS.fill();
 window.PATRULLA_DEBUG={get S(){return S;},get peds(){return peds;},get actors(){return actors;},get player(){return player;},pedModal,staffModal,openPanel,garageScreen,personalScreen,stationScreen,missionsScreen,profileScreen,get crimes(){return crimes;},get chase(){return chase;},get roadblock(){return roadblock;},requestRoadblock,forceChase(){chaseT=0;},startMission,openHub,closeHub,goPatrol,openMap,openInterro,openCellsView,openShop,newDetainee,get view(){return view;},get street3d(){return street3d;}};
 
 window.claude?.hot?.snapshot?.(()=>serialize());
-const start=data=>{ init(data&&typeof data.money==='number'?data:loadLocal()); $('b3dTxt').textContent=S.view3d?'Vista 2D':'Vista 3D'; openHub(cityAt(player.x,player.y)&&S.owned[cityAt(player.x,player.y).id]?cityAt(player.x,player.y):CBY.madrid); requestAnimationFrame(t=>{last=t;loop(t);}); };
+const start=data=>{ init(data&&typeof data.money==='number'?data:loadLocal()); $('b3dTxt').textContent=S.view3d?'Mapa 2D':'Vista 3D'; openHub(cityAt(player.x,player.y)&&S.owned[cityAt(player.x,player.y).id]?cityAt(player.x,player.y):CBY.madrid); requestAnimationFrame(t=>{last=t;loop(t);}); };
 window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
 })();

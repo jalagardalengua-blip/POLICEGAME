@@ -440,3 +440,61 @@ body.street .speedo{left:calc(var(--pad) + 84px)}
 /* capas a pantalla completa: dejan pasar los toques salvo en sus botones */
 #ui>.drive,#ui>.ivui,#ui>.cvui{pointer-events:none}
 .drive>*,.ivui>*,.cvui>*{pointer-events:auto}
+
+/* ================= modo calle: interfaz limpia y un solo botón de acción ================= */
+.ctx{position:absolute;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));min-width:200px;min-height:92px;border-radius:18px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;padding:10px 18px;
+  background:linear-gradient(#ffd666,#e9a91c);color:#1a1300;border:3px solid #fff3c4;box-shadow:0 8px 26px rgba(0,0,0,.45);z-index:4}
+.ctx b{font-size:26px;font-weight:800;line-height:1}
+.ctx small{font-size:15px;font-weight:700;opacity:.85}
+.ctx kbd{position:absolute;top:6px;right:8px;font-size:11px;border-color:rgba(0,0,0,.3);color:#3a2a00}
+.ctx.red{background:linear-gradient(#ff5a6a,#c8192c);color:#fff;border-color:#ffd0d5;animation:pulse 1s infinite}
+.ctx.red kbd{color:#fff;border-color:rgba(255,255,255,.5)}
+.ctx.blue{background:linear-gradient(#3f8cff,#1650b8);color:#fff;border-color:#bcd8ff}
+.ctx.blue kbd{color:#fff;border-color:rgba(255,255,255,.5)}
+@keyframes pulse{50%{transform:scale(1.04)}}
+.obj{position:absolute;left:50%;top:calc(76px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:flex;align-items:center;gap:12px;
+  background:rgba(8,14,30,.86);border:1px solid #ffc94a;border-radius:30px;padding:6px 18px 6px 8px;max-width:min(560px,70vw);pointer-events:none}
+.obj .arr{width:40px;height:40px;border-radius:50%;background:#ffc94a;color:#1a1300;display:grid;place-items:center;font-size:22px;flex:none;transition:transform .15s}
+.obj b{display:block;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.obj small{display:block;font-size:14px;color:#ffe08a;font-family:var(--font-m)}
+.joy{position:absolute;left:calc(var(--pad) + 30px);bottom:calc(40px + env(safe-area-inset-bottom,0px));width:110px;height:110px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(8,14,30,.35);pointer-events:none;display:grid;place-items:center}
+.joy i{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.55)}
+.menubtn{display:none}
+/* en la calle se esconde todo lo que tapa */
+body.street .side,body.street .patcard,body.street .status,body.street .bottom,body.street .infobar,body.street .steer,body.street #bVeh,body.street #hint{display:none!important}
+body.street.menuopen .side{display:flex!important;z-index:6}
+body.street .menubtn{display:flex;position:absolute;left:var(--pad);top:calc(118px + env(safe-area-inset-top,0px));align-items:center;gap:8px;height:48px;font-size:17px}
+body.street .menubtn .ic{width:26px;height:26px}
+body.street.menuopen .menubtn{left:calc(var(--pad) + 260px)}
+body.street .profile{transform:scale(.82);transform-origin:top left}
+body.street .dbtns{top:calc(282px + env(safe-area-inset-top,0px))}
+body.street .dbtns button{width:150px;height:50px;font-size:16px}
+body.street .speedo{left:auto;right:240px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:130px;height:130px}
+body.street .speedo b{font-size:40px}
+body.street .mm{width:240px;height:160px}
+body.street .chase{top:calc(140px + env(safe-area-inset-top,0px));right:auto;left:50%;transform:translateX(-50%)}
+#modal.sheetmode{place-items:end center;padding-bottom:max(16px,env(safe-area-inset-bottom,0px));background:rgba(5,8,18,.35)}
+#modal.sheetmode .sheet{width:min(760px,100%)}
+#modal.sheetmode .acts button{flex:1 1 30%;min-height:48px;font-size:16px;text-align:center}
+.acts button.rec{border:2px solid var(--gold);box-shadow:0 0 0 3px rgba(255,201,74,.25);position:relative}
+.acts button.rec::after{content:"recomendado";position:absolute;top:-9px;right:8px;background:var(--gold);color:#1a1300;font-size:10px;font-weight:800;padding:0 5px;border-radius:3px;text-transform:uppercase}
+.pedhead{display:flex;gap:12px;align-items:center}
+.pface{width:64px;height:64px;border-radius:10px;overflow:hidden;flex:none;border:1px solid var(--line)}
+@media (max-width:820px){
+  .ctx{min-width:150px;min-height:76px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom,0px))} .ctx b{font-size:20px} .ctx small{font-size:12px}
+  .obj{top:calc(56px + env(safe-area-inset-top,0px));max-width:80vw;padding:4px 12px 4px 6px} .obj .arr{width:30px;height:30px;font-size:16px} .obj b{font-size:14px}
+  body.street .menubtn{top:calc(96px + env(safe-area-inset-top,0px));height:42px} body.street.menuopen .menubtn{left:72px}
+  body.street .dbtns{top:calc(200px + env(safe-area-inset-top,0px))!important} body.street .dbtns button{width:50px!important;height:50px!important}
+  body.street .speedo{right:auto!important;left:auto;top:auto!important;bottom:110px!important;right:16px!important;width:84px!important;height:84px!important}
+  body.street .chase{top:calc(110px + env(safe-area-inset-top,0px))!important}
+  .joy{bottom:calc(30px + env(safe-area-inset-bottom,0px))}
+}
+.ctx.red{animation:glowred 1s infinite}
+@keyframes pulse{0%{}100%{}}
+@keyframes glowred{50%{box-shadow:0 0 0 6px rgba(255,59,78,.35),0 8px 26px rgba(0,0,0,.45)}}
+@media (max-width:820px){
+  body.hub .banner{display:flex!important;width:auto;height:auto;left:auto;right:12px;bottom:calc(150px + env(safe-area-inset-bottom,0px));background:none;border:none;padding:0}
+  body.hub .banner::after,body.hub .banner .big,body.hub .banner svg.sil{display:none}
+  body.hub .banner button{font-size:18px;padding:12px 18px}
+}

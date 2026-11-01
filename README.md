@@ -41,22 +41,20 @@ Cada día se pagan las nóminas y el mantenimiento de la flota.
 
 **En internet (GitHub Pages):** en el repositorio, ve a *Settings → Pages* y en *Source* elige **GitHub Actions**. Cada vez que se suba algo a `main`, el juego se publica solo en `https://<tu-usuario>.github.io/<repositorio>/`.
 
-### Controles
+### Controles (mundo libre)
 
 | Acción | Teclado | Móvil |
 |---|---|---|
-| Moverse | WASD o flechas | Arrastrar el dedo |
-| Dar el alto o dar órdenes | E | Tocar a la persona |
-| Centro de mando (flota, agentes, operaciones…) | Menú lateral | Menú lateral |
-| Misiones | M | Pestaña «Misiones» |
-| Plantilla | P | Pestaña «Plantilla» |
-| Entrar o salir de Mi Comisaría | E en la plaza de la comisaría | Menú «Mi Comisaría» / «Salir a patrullar» |
-| Conducir en 3D | W/S acelerar y frenar, A/D girar | Flechas y pedal en pantalla, o arrastrar |
-| Subir o bajar del coche | C | «Cambiar vehículo» |
-| Vista 3D o mapa | V | «Vista 2D / 3D» |
-| Volver atrás | Esc | Botón «Volver» o «Finalizar» |
+| Caminar (hacia donde empujas) | WASD o flechas | Joystick a la izquierda |
+| Girar la cámara a pie | Arrastrar con el ratón, Q / R | Arrastrar en la mitad derecha |
+| Conducir | W acelera, S frena o marcha atrás, A/D giran | Joystick |
+| **Botón de acción** (cambia según lo que tengas cerca: ¡Alto, policía!, Dar el alto, Subir/Bajar del coche, Entregar detenidos, Entrar en comisaría, Dar órdenes) | E o Espacio | Botón grande abajo a la derecha |
+| Subir o bajar del coche | F | Botón de acción |
+| Radio (pedir tu coche, refuerzos, control de carretera) | Botón Radio | Botón Radio |
+| Menú (mapa, comisaría, garaje, personal, calabozos, misiones) | Botón Menú | Botón Menú |
+| Vista 3D o mapa 2D | V | Botón Mapa 2D |
 
-En la ciudad vas a pie, por carretera en coche patrulla y en el mar en patrullera (si tienes la Unidad marítima).
+El mundo 3D cubre toda España: sales de la ciudad por las autovías y llegas a cualquier otra. Te bajas del coche donde quieras, lo dejas aparcado y vuelves a él (o lo pides por radio). La brújula dorada de arriba señala siempre tu objetivo.
 
 ## Qué hay en el juego
 

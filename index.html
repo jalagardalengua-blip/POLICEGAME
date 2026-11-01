@@ -90,7 +90,7 @@
   <!-- patrulla -->
   <div class="drive" id="drive">
     <div class="patcard"><span class="ic" data-ico="car"></span><div><b>Patrulla en curso…</b><span id="patZone">Zona: —</span><span id="patInfo"></span></div></div>
-    <div class="speedo"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="rgba(8,14,30,.85)" stroke="#2c4a8a" stroke-width="3"/>
+    <div class="speedo" id="speedo"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50" fill="rgba(8,14,30,.85)" stroke="#2c4a8a" stroke-width="3"/>
       <path d="M24 92A50 50 0 1 1 96 92" fill="none" stroke="#1d3466" stroke-width="9" stroke-linecap="round"/>
       <path id="speedArc" d="M24 92A50 50 0 1 1 96 92" fill="none" stroke="url(#spg)" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 400"/>
       <defs><linearGradient id="spg" x1="0" x2="1"><stop offset="0" stop-color="#3d8bff"/><stop offset=".7" stop-color="#7fd0ff"/><stop offset="1" stop-color="#ff3b4e"/></linearGradient></defs></svg>
@@ -102,6 +102,10 @@
       <button id="bVeh"><span class="ic" data-ico="car"></span><span>Cambiar vehículo</span></button>
       <button id="b3d"><span class="ic" data-ico="cam"></span><span id="b3dTxt">Vista 2D</span></button>
     </div>
+    <button class="ctx" id="ctx" hidden><b id="ctxL">Acción</b><small id="ctxS"></small><kbd>E</kbd></button>
+    <div class="obj" id="obj" hidden><span class="arr" id="objA">▲</span><div><b id="objT">Objetivo</b><small id="objD"></small></div></div>
+    <div class="joy" id="joy" hidden><i id="joyK"></i></div>
+    <button class="menubtn" id="bMenu" aria-label="Menú"><span class="ic" data-ico="map"></span><span>Menú</span></button>
     <div class="steer"><button id="stL" aria-label="Girar a la izquierda">←</button><button id="stR" aria-label="Girar a la derecha">→</button><button id="pedal" aria-label="Acelerar"><span></span></button></div>
   </div>
 
@@ -159,12 +163,12 @@
   <div class="mbody">
     <div>Diriges una red de comisarías por toda España. El mapa es abierto: viaja por autovías, abre comisarías en otras ciudades y resuelve casos. No hay niveles de mapa: tú subes de nivel como jefe.</div>
     <ul class="log">
-      <li>Estás en <b>Mi Comisaría</b>. Pulsa <b>Salir a patrullar</b> para ir a la calle. Vuelve cuando quieras con <kbd>E</kbd> en la comisaría.</li>
-      <li><kbd>WASD</kbd> o flechas para moverte. En el móvil, arrastra el dedo. Fuera de la ciudad vas en coche. En el mar, en patrullera.</li>
-      <li>Acércate a una persona y pulsa <kbd>E</kbd>, tócala o usa <b>Arrestar</b> para darle el alto.</li>
-      <li>Tu plantilla camina por la comisaría. Tócala para darle órdenes, o usa <b>Desplegar unidades</b> y <b>Pedir refuerzos</b>.</li>
-      <li><b>Cachear sin indicios</b> es ilegal. Una detención sin base legal o sin leer los derechos acaba anulada por el juez.</li>
-      <li>Lleva a los detenidos al círculo de <b>ENTREGA</b>, interrógalos con abogado y pásalos al juez antes de 72 horas.</li>
+      <li><b>Moverte:</b> <kbd>WASD</kbd> o flechas. En el móvil, el joystick de la izquierda. A pie vas hacia donde empujas; arrastra con el ratón o con el dedo en la parte derecha para girar la cámara.</li>
+      <li><b>Conducir:</b> <kbd>W</kbd> acelera, <kbd>S</kbd> frena o da marcha atrás, <kbd>A</kbd>/<kbd>D</kbd> giran. Puedes salir de la ciudad por las autovías hasta cualquier otra.</li>
+      <li><b>Un solo botón para actuar:</b> el botón grande de abajo a la derecha (o <kbd>E</kbd> / <kbd>Espacio</kbd>) cambia según lo que tengas cerca: <i>¡Alto, policía!</i>, <i>Dar el alto</i>, <i>Subir al coche</i>, <i>Bajar del coche</i>, <i>Entregar detenidos</i>, <i>Entrar en comisaría</i>.</li>
+      <li>Arriba, la <b>brújula dorada</b> señala tu objetivo y la distancia: el aviso más cercano o el paso de la misión.</li>
+      <li>Al dar el alto, el juego marca el <b>paso recomendado</b>. Cachear sin indicios o detener sin base legal es ilegal y el juez lo anula.</li>
+      <li>Lleva a los detenidos al círculo azul de <b>ENTREGA</b> de tu comisaría. Desde el <b>Menú</b> gestionas calabozos, interrogatorios, garaje, personal y misiones.</li>
     </ul>
     <div class="note">Los casos, personajes y emblemas son ficticios. Las referencias legales están simplificadas para el juego. La partida se guarda en este navegador.</div>
   </div>
