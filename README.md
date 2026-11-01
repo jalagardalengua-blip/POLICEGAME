@@ -18,7 +18,8 @@ No hay niveles: el mapa es la península entera y se juega de forma continua.
 | **Personal** | Fichas con retrato, estrellas de nivel y energía; contratar agentes y especialistas |
 | **Misiones disponibles** | Tarjetas con imagen, nivel recomendado, recompensa en euros y XP, y botón Aceptar |
 | **Tu perfil** | Tu jefe, nivel y estadísticas de carrera |
-| **Persecuciones** | Un coche huye tras un atraco: tienes 90 segundos para cerrarle el paso con la patrulla |
+| **Persecuciones** | En la ciudad (3D) y en las autovías: un coche huye con cuenta atrás. Mantente pegado para detenerlo o, en autovía, pide por radio un **control de carretera** (200 €) más adelante |
+| **Sonido** | Sirena, bocina, motor según la velocidad, radio de la central, ruido de ciudad y de mar, y melodías al detener o completar misiones. Se puede apagar en Ajustes |
 
 La interfaz tiene perfil de jefe con nivel y experiencia, contadores de fondos (€), reputación e inteligencia, menú lateral, minimapa con zoom y acciones rápidas (desplegar unidades, sanción, arrestar, refuerzos y helicóptero).
 
@@ -77,6 +78,7 @@ js/data.js              Contenido: geografía, ciudades, autovías, misiones, pe
 js/game.js              Motor: simulación, IA, mapa 2D, interfaz
 js/hub3d.js             Motor 3D: comisaría, interrogatorio, calabozos, calle y miniaturas (Three.js)
 js/icons.js             Iconos e ilustraciones SVG
+js/audio.js             Sonido sintetizado con Web Audio (sin archivos)
 js/vendor/three.min.js  Three.js r128 (licencia MIT, ver THREE-LICENSE.txt)
 docs/DISENO.md          Documento de diseño y hoja de ruta
 tools/build-single.py   Genera dist/patrulla-espana.html (todo en un archivo)

@@ -48,8 +48,8 @@ Escena 3D en tiempo real con cámara sobre el hombro del jefe, al estilo de los 
 - Las ciudades se dibujan una vez y se guardan en una caché. El terreno se guarda en trozos de 1024 px. A partir de esas dos cachés se compone cada fotograma, con luces dinámicas encima.
 
 ## Hoja de ruta
-- [ ] Sonido: sirenas, radio, ambiente de ciudad y mar
-- [ ] Persecuciones por autovía con controles de carretera
+- [x] Sonido: sirenas, bocina, motor, radio, ambiente de ciudad y mar
+- [x] Persecuciones por autovía con controles de carretera
 - [ ] Oficina y sala de mando en 3D
 - [x] Tráfico civil, farolas y agentes que circulan por las calles
 - [x] Persecuciones en coche con cuenta atrás
