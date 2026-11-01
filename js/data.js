@@ -71,7 +71,7 @@ const UPG = {
   sala:{n:'Sala de interrogatorio',base:300,k:1.8,max:5,d:'+1 turno de preguntas y más colaboración',g:'i'},
   lab:{n:'Laboratorio forense',base:800,k:1.9,max:5,d:'+3 % de pruebas por hora a cada detenido',g:'i'},
   conv:{n:'Convenio con el turno de oficio',base:350,k:1.8,max:4,d:'El abogado de oficio llega antes',g:'i'},
-  rec:{n:'Oficina de denuncias',base:300,k:1.9,max:10,d:'+$1/s por cada comisaría abierta',g:'i'},
+  rec:{n:'Oficina de denuncias',base:300,k:1.9,max:10,d:'+1 €/s por cada comisaría abierta',g:'i'},
   mot:{n:'Motor de la patrulla',base:250,k:2,max:5,d:'+12 % de velocidad en coche',g:'i'},
   bot:{n:'Botas de servicio',base:150,k:2,max:5,d:'+12 % de velocidad a pie',g:'i'},
   esp:{n:'Más esposas',base:200,k:1.9,max:5,d:'Puedes llevar 1 detenido más',g:'i'},

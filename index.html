@@ -9,32 +9,83 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="hub">
 <canvas id="c"></canvas>
-<div class="hud">
-  <div class="box stats">
-    <div class="brand"><i></i>Patrulla España</div>
-    <span class="k">Fondos</span><span class="v money" id="hMoney">$0</span>
-    <span class="k">Hora</span><span class="v" id="hTime">Día 1 08:00</span>
-    <span class="k">Lugar</span><span class="v" id="hCity">—</span>
-    <span class="k">Esposas</span><span class="v" id="hCarry">0/2</span>
-    <span class="k">Calabozos</span><span class="v" id="hCust">0/8</span>
-    <span class="k">Contigo</span><span class="v" id="hTeam">nadie</span>
-    <span class="k">Inteligencia</span><span class="v" id="hIntel">0</span>
-    <span class="k">Reputación</span><span class="v" id="hRep">50</span>
-    <div class="rep"><b id="hRepBar"></b></div>
+<canvas id="hub3d" hidden></canvas>
+
+<div id="ui">
+  <header class="topbar">
+    <div class="profile">
+      <div class="ava" id="ava"></div>
+      <div class="prof-txt">
+        <div class="row"><div class="flag" title="España"></div><b>Jefe de Policía</b></div>
+        <span class="lvl" id="pLvl">Nivel 1</span>
+        <div class="xpbar"><i id="pXpBar"></i></div>
+        <small id="pXp">XP 0 / 50</small>
+      </div>
+    </div>
+    <div class="pills">
+      <button class="pill" data-open="ins" title="Fondos"><span class="ic" data-ico="money"></span><span class="num" id="hMoney">0 €</span><i class="plus">+</i></button>
+      <button class="pill" data-open="pla" title="Reputación"><span class="ic" data-ico="shield"></span><span class="num" id="hRep">50</span><span class="lab">reputación</span><i class="plus">+</i></button>
+      <button class="pill" data-open="det" title="Inteligencia"><span class="ic" data-ico="bolt"></span><span class="num" id="hIntel">0</span><span class="lab">inteligencia</span><i class="plus">+</i></button>
+    </div>
+    <div class="sys">
+      <button id="bMail" aria-label="Avisos" data-ico="mail"></button>
+      <button id="bTrophy" aria-label="Logros" data-ico="trophy"></button>
+      <button id="bSettings" aria-label="Ajustes" data-ico="gear"></button>
+      <button id="bPause" aria-label="Pausa" data-ico="pause"></button>
+    </div>
+  </header>
+
+  <div class="infobar" id="infobar">
+    <span class="ic" data-ico="info"></span>
+    <div><div id="iTitle">Tu comisaría de Madrid</div><div class="lv"><span id="iLvl">Nivel 1 / 3</span><div class="bar"><i id="iLvlBar" style="width:33%"></i></div></div></div>
+    <div>Ingresos: <b id="iInc">—</b></div>
   </div>
-  <div class="box mis" id="hMis"><h3>Sin misión</h3><p>Abre el Centro de mando para elegir una</p></div>
-</div>
-<div class="right">
-  <canvas id="mini" width="360" height="308"></canvas>
-  <div class="btns">
-    <button class="main" id="bPanel">Centro de mando</button>
-    <button id="bHelp">Ayuda</button><button id="bReset">Reiniciar</button>
+  <div class="status" id="status"></div>
+
+  <nav class="side" id="side">
+    <button data-go="hub" class="on"><span class="ic" data-ico="emblem"></span><div><b>Mi Comisaría</b><span>Panel principal</span></div></button>
+    <button data-go="per"><span class="ic" data-ico="car"></span><div><b>Flota</b><span>Comprar patrullas</span></div></button>
+    <button data-go="pla"><span class="ic" data-ico="people"></span><div><b>Agentes</b><span>Plantilla y órdenes</span></div></button>
+    <button data-go="com"><span class="ic" data-ico="building"></span><div><b>Comisarías</b><span>Gestionar ciudades</span></div></button>
+    <button data-go="est"><span class="ic" data-ico="chart"></span><div><b>Estadísticas</b><span>Ver informes</span></div></button>
+    <button data-go="mis"><span class="ic" data-ico="cup"></span><div><b>Misiones</b><span>Completar objetivos</span></div><i class="badge" id="misN" hidden>0</i></button>
+    <button data-go="det"><span class="ic" data-ico="star"></span><div><b>Operaciones</b><span>Detenidos y juzgado</span></div></button>
+  </nav>
+
+  <aside class="cards" id="cards">
+    <section class="card"><h4><span class="ic" data-ico="car"></span>Garaje de patrullas</h4>
+      <div class="cb"><div class="art" data-art="garage"><button class="blue" data-go="per">Gestionar flota ›</button></div>
+      <div class="meta"><div>Patrullas activas<b id="cCars">0 / 0</b></div><div>Agentes<b id="cAg">0</b></div></div></div></section>
+    <section class="card"><h4><span class="ic" data-ico="chat"></span>Interrogatorio</h4>
+      <div class="cb"><div class="art" data-art="interro"><button class="blue" data-go="det">Interrogar ›</button></div>
+      <div class="meta"><div>Con abogado<b id="cLaw">0</b></div><div>Pruebas medias<b id="cEv">—</b></div></div></div></section>
+    <section class="card"><h4><span class="ic" data-ico="bars"></span>Calabozos</h4>
+      <div class="cb"><div class="art" data-art="cell"><button class="blue" data-go="det">Gestionar ›</button></div>
+      <div class="meta"><div><span class="ic" data-ico="coin"></span>Capacidad<b id="cCap">0 / 8</b></div><div>Plazo más cercano<b id="cH">—</b></div></div></div></section>
+  </aside>
+
+  <div class="mm"><canvas id="mini" width="760" height="500"></canvas><span class="north">N</span>
+    <div class="zoom"><button id="zIn" aria-label="Acercar mapa">+</button><button id="zOut" aria-label="Alejar mapa">−</button></div></div>
+
+  <div class="bottom">
+    <div class="mission" id="hMis"><span class="ex">!</span><div><h3>Sin misión</h3><p>Abre Misiones para elegir una</p></div></div>
+    <div class="actions">
+      <button data-act="deploy"><span class="ic" data-ico="run"></span>Desplegar unidades</button>
+      <button data-act="fine"><span class="ic" data-ico="gavel"></span>Aplicar sanción</button>
+      <button data-act="arrest"><span class="ic" data-ico="cuffs"></span>Arrestar</button>
+      <button data-act="backup"><span class="ic" data-ico="car"></span>Pedir refuerzos</button>
+      <button data-act="heli"><span class="ic" data-ico="heli"></span>Solicitar helicóptero</button>
+    </div>
   </div>
+
+  <div class="banner" id="banner" data-art="silhouette">
+    <div class="big">Dirige tu equipo,<br>protege la ciudad</div>
+    <button class="go" id="bPatrol">Salir a patrullar ›</button>
+  </div>
+  <div id="hint"></div>
 </div>
-<div id="hint">Muévete con WASD o arrastrando el dedo</div>
-<button id="act" hidden>Dar el alto (E)</button>
 <div id="toast"></div>
 
 <div class="overlay" id="panel" hidden><div class="sheet">
@@ -52,18 +103,18 @@
 <div class="overlay" id="help" hidden><div class="sheet sm">
   <div class="mhead"><h2>Patrulla España</h2></div>
   <div class="mbody">
-    <div>Diriges una red de comisarías por toda España. El mapa es abierto: viaja por autovías, abre comisarías en otras ciudades y resuelve casos. No hay niveles.</div>
+    <div>Diriges una red de comisarías por toda España. El mapa es abierto: viaja por autovías, abre comisarías en otras ciudades y resuelve casos. No hay niveles de mapa: tú subes de nivel como jefe.</div>
     <ul class="log">
+      <li>Estás en <b>Mi Comisaría</b>. Pulsa <b>Salir a patrullar</b> para ir a la calle. Vuelve cuando quieras con <kbd>E</kbd> en la comisaría.</li>
       <li><kbd>WASD</kbd> o flechas para moverte. En el móvil, arrastra el dedo. Fuera de la ciudad vas en coche. En el mar, en patrullera.</li>
-      <li>Acércate a una persona y pulsa <kbd>E</kbd> (o tócala) para darle el alto: identificarla, preguntar, cachear, multar o detener.</li>
-      <li>Tu plantilla camina por las comisarías. Tócala o pulsa <kbd>E</kbd> cerca para darle órdenes: patrullar, acompañarte, hacer guardia, descansar o trasladarse.</li>
+      <li>Acércate a una persona y pulsa <kbd>E</kbd>, tócala o usa <b>Arrestar</b> para darle el alto.</li>
+      <li>Tu plantilla camina por la comisaría. Tócala para darle órdenes, o usa <b>Desplegar unidades</b> y <b>Pedir refuerzos</b>.</li>
       <li><b>Cachear sin indicios</b> es ilegal. Una detención sin base legal o sin leer los derechos acaba anulada por el juez.</li>
-      <li>Lleva a los detenidos al círculo de <b>ENTREGA</b>. En el Centro de mando los interrogas (con su abogado presente) y los pasas al juez antes de 72 horas.</li>
-      <li>Las misiones te llevan a Madrid, la Costa del Sol, Marbella, el Estrecho, Sanlúcar, Valencia, Barcelona y las Rías gallegas.</li>
+      <li>Lleva a los detenidos al círculo de <b>ENTREGA</b>, interrógalos con abogado y pásalos al juez antes de 72 horas.</li>
     </ul>
-    <div class="note">Los casos y personajes son ficticios. Las referencias legales están simplificadas para el juego. La partida se guarda en este navegador.</div>
+    <div class="note">Los casos, personajes y emblemas son ficticios. Las referencias legales están simplificadas para el juego. La partida se guarda en este navegador.</div>
   </div>
-  <div class="acts"><button class="go" id="bStart">Empezar a patrullar</button></div>
+  <div class="acts"><button class="go" id="bStart">Empezar</button></div>
 </div></div>
 
 <div class="overlay" id="confirm" hidden><div class="sheet sm">
@@ -72,7 +123,10 @@
   <div class="acts"><button class="go" id="bYes">Sí, borrar partida</button><button id="bNo">Cancelar</button></div>
 </div></div>
 
+<script src="js/vendor/three.min.js"></script>
+<script src="js/icons.js"></script>
 <script src="js/data.js"></script>
+<script src="js/hub3d.js"></script>
 <script src="js/game.js"></script>
 </body>
 </html>

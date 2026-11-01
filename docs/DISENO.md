@@ -39,6 +39,9 @@ La energía baja trabajando y sube descansando. Con 5 casos se sube un nivel (m�
 ### Misiones
 Están en `js/data.js`. Cada misión es una lista de pasos de estos tipos: `arrest`, `court`, `own`, `up`, `intel`, `goto`, `inspect`, `warrant`, `raid`, `boats` y `follow`.
 
+## Pantalla principal (Mi Comisaría)
+Escena 3D en tiempo real con cámara sobre el hombro del jefe, al estilo de los juegos de gestión para móvil: comisaría con cristaleras, plaza mojada con reflejos de sirenas, coches patrulla, helicóptero en vuelo, bandera ondeando y ciudad de fondo. Por encima va la interfaz completa: perfil y nivel, contadores, menú lateral, tarjetas de garaje, interrogatorio y calabozos, misión destacada y acciones rápidas.
+
 ## Dirección de arte
 - Vista cenital con edificios en 2,5D: azotea más fachada sur con ventanas y sombra proyectada.
 - Paleta nocturna de comisaría: azul marino, dorado de insignia, rojo y azul de sirena.
@@ -47,7 +50,9 @@ Están en `js/data.js`. Cada misión es una lista de pasos de estos tipos: `arre
 ## Hoja de ruta
 - [ ] Sonido: sirenas, radio, ambiente de ciudad y mar
 - [ ] Persecuciones en coche por autovía con controles de carretera
-- [ ] Interior de la comisaría como escena propia (salas, calabozos, oficina)
+- [ ] Interior de la comisaría en 3D (sala de interrogatorio, calabozos, oficina)
+- [ ] Modelos 3D más detallados (GLTF) para coches, personajes y edificios
+- [ ] Patrulla en 3D por las calles
 - [ ] Más ciudades: Valladolid, Salamanca, Santander, Pamplona, Badajoz, Canarias
 - [ ] Rasgos de personalidad en la plantilla (veterano, impulsivo, metódico)
 - [ ] Juicios con testigos y peritos
