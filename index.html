@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Patrulla España</title>
+<meta name="description" content="Juego de gestión policial a mundo abierto por toda España: detenciones legales, interrogatorios, plantilla y misiones contra el narcotráfico.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud">
+  <div class="box stats">
+    <div class="brand"><i></i>Patrulla España</div>
+    <span class="k">Fondos</span><span class="v money" id="hMoney">$0</span>
+    <span class="k">Hora</span><span class="v" id="hTime">Día 1 08:00</span>
+    <span class="k">Lugar</span><span class="v" id="hCity">—</span>
+    <span class="k">Esposas</span><span class="v" id="hCarry">0/2</span>
+    <span class="k">Calabozos</span><span class="v" id="hCust">0/8</span>
+    <span class="k">Contigo</span><span class="v" id="hTeam">nadie</span>
+    <span class="k">Inteligencia</span><span class="v" id="hIntel">0</span>
+    <span class="k">Reputación</span><span class="v" id="hRep">50</span>
+    <div class="rep"><b id="hRepBar"></b></div>
+  </div>
+  <div class="box mis" id="hMis"><h3>Sin misión</h3><p>Abre el Centro de mando para elegir una</p></div>
+</div>
+<div class="right">
+  <canvas id="mini" width="360" height="308"></canvas>
+  <div class="btns">
+    <button class="main" id="bPanel">Centro de mando</button>
+    <button id="bHelp">Ayuda</button><button id="bReset">Reiniciar</button>
+  </div>
+</div>
+<div id="hint">Muévete con WASD o arrastrando el dedo</div>
+<button id="act" hidden>Dar el alto (E)</button>
+<div id="toast"></div>
+
+<div class="overlay" id="panel" hidden><div class="sheet">
+  <header><h2>Centro de mando</h2><span class="where" id="pWhere"></span><button id="pClose">Cerrar</button></header>
+  <nav class="tabs" id="pTabs" role="tablist"></nav>
+  <div class="pbody" id="pBody"></div>
+</div></div>
+
+<div class="overlay" id="modal" hidden><div class="sheet sm">
+  <div class="mhead"><h2 id="mTitle"></h2></div>
+  <div class="mbody" id="mBody"></div>
+  <div class="acts" id="mActs"></div>
+</div></div>
+
+<div class="overlay" id="help" hidden><div class="sheet sm">
+  <div class="mhead"><h2>Patrulla España</h2></div>
+  <div class="mbody">
+    <div>Diriges una red de comisarías por toda España. El mapa es abierto: viaja por autovías, abre comisarías en otras ciudades y resuelve casos. No hay niveles.</div>
+    <ul class="log">
+      <li><kbd>WASD</kbd> o flechas para moverte. En el móvil, arrastra el dedo. Fuera de la ciudad vas en coche. En el mar, en patrullera.</li>
+      <li>Acércate a una persona y pulsa <kbd>E</kbd> (o tócala) para darle el alto: identificarla, preguntar, cachear, multar o detener.</li>
+      <li>Tu plantilla camina por las comisarías. Tócala o pulsa <kbd>E</kbd> cerca para darle órdenes: patrullar, acompañarte, hacer guardia, descansar o trasladarse.</li>
+      <li><b>Cachear sin indicios</b> es ilegal. Una detención sin base legal o sin leer los derechos acaba anulada por el juez.</li>
+      <li>Lleva a los detenidos al círculo de <b>ENTREGA</b>. En el Centro de mando los interrogas (con su abogado presente) y los pasas al juez antes de 72 horas.</li>
+      <li>Las misiones te llevan a Madrid, la Costa del Sol, Marbella, el Estrecho, Sanlúcar, Valencia, Barcelona y las Rías gallegas.</li>
+    </ul>
+    <div class="note">Los casos y personajes son ficticios. Las referencias legales están simplificadas para el juego. La partida se guarda en este navegador.</div>
+  </div>
+  <div class="acts"><button class="go" id="bStart">Empezar a patrullar</button></div>
+</div></div>
+
+<div class="overlay" id="confirm" hidden><div class="sheet sm">
+  <div class="mhead"><h2>¿Empezar de cero?</h2></div>
+  <div class="mbody">Se borran el dinero, las comisarías, la plantilla, los detenidos y las misiones.</div>
+  <div class="acts"><button class="go" id="bYes">Sí, borrar partida</button><button id="bNo">Cancelar</button></div>
+</div></div>
+
+<script src="js/data.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
