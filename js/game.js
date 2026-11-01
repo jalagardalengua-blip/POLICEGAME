@@ -142,7 +142,7 @@ function migrate(){
   for(let k=0;k<U('ana');k++) newStaff('analista','madrid');
   for(let k=0;k<U('k9');k++) newStaff('guia','madrid');
 }
-function init(data){
+function init(data){ ccars=[];
   const f=fresh();
   S=data&&typeof data.money==='number'?{...f,...data,up:{...(data.up||{})},stats:{...f.stats,...(data.stats||{})},owned:JSON.parse(JSON.stringify(data.owned||f.owned))}:f;
   migrate();
@@ -230,6 +230,28 @@ function updatePeds(dt){
     if(Math.hypot(p.x-c.x,p.y-c.y)>c.r-8||!land(p.x,p.y)){ p.dir*=-1; if(p.axis==='h') p.x+=p.sp*dt*p.dir*2; else p.y+=p.sp*dt*p.dir*2; }
   }
 }
+let ccars=[];
+const CARCOL=['#c0392b','#e8e8e8','#2e86de','#7f8c8d','#16a085','#f39c12','#222831','#8e44ad','#d35400','#bdc3c7'];
+function manageCars(){
+  for(const c of CITIES){ const d=Math.hypot(player.x-c.x,player.y-c.y); if(d>c.r+700) continue;
+    const want=Math.round(c.r/34); let n=0; for(const k of ccars) if(k.city===c.id) n++;
+    for(;n<want;n++){ const p0=roadPoint(c); if(!p0) continue; ccars.push({uid:++UID,city:c.id,x:p0.horiz?p0.x:c.x+Math.round((p0.x-c.x)/120)*120,y:p0.horiz?c.y+Math.round((p0.y-c.y)/120)*120:p0.y,axis:p0.horiz?'h':'v',dir:Math.random()<.5?1:-1,sp:70+Math.random()*50,col:pick(CARCOL),cell:null,wait:0}); } }
+  ccars=ccars.filter(k=>{ const c=CBY[k.city]; return Math.hypot(player.x-c.x,player.y-c.y)<c.r+1000; });
+}
+function updateCars(dt){
+  for(const k of ccars){ const c=CBY[k.city];
+    const near=dist(k,player)<(S.siren?120:46)&&((k.axis==='h'?(player.x-k.x)*k.dir:(player.y-k.y)*k.dir)>0);
+    if(near){ k.wait=S.siren?1.2:.3; }
+    if(k.wait>0){ k.wait-=dt; continue; }
+    const s=k.sp*dt*k.dir; if(k.axis==='h') k.x+=s; else k.y+=s;
+    const along=k.axis==='h'?k.x-c.x:k.y-c.y, cell=Math.floor(along/120);
+    if(k.cell==null) k.cell=cell;
+    if(cell!==k.cell){ const snap=(k.dir>0?cell:cell+1)*120; k.cell=cell;
+      if(Math.random()<.3){ if(k.axis==='h'){ k.x=c.x+snap; k.axis='v'; k.cell=Math.floor((k.y-c.y)/120); } else { k.y=c.y+snap; k.axis='h'; k.cell=Math.floor((k.x-c.x)/120); } k.dir=Math.random()<.5?1:-1; } }
+    const q=carPos(k); if(Math.hypot(q.x-c.x,q.y-c.y)>c.r-6||!land(q.x,q.y)||inPlaza(c,q.x,q.y,4)){ k.dir*=-1; if(k.axis==='h') k.x+=k.sp*dt*k.dir*2; else k.y+=k.sp*dt*k.dir*2; }
+  } }
+const carPos=k=>k.axis==='h'?{x:k.x,y:k.y+7*k.dir}:{x:k.x-7*k.dir,y:k.y};
+const carAng=k=>k.axis==='h'?(k.dir>0?0:Math.PI):(k.dir>0?Math.PI/2:-Math.PI/2);
 const pedPos=p=>p.axis==='h'?{x:p.x,y:p.y+p.side}:{x:p.x+p.side,y:p.y};
 const pedAng=p=>p.axis==='h'?(p.dir>0?0:Math.PI):(p.dir>0?Math.PI/2:-Math.PI/2);
 
@@ -535,9 +557,9 @@ function updateActors(dt){
           if(best){ best.taken=a; a.target=best; a.state='go'; } else wander(a,c,dt); } }
       else if(a.state==='go'){ const cr=a.target;
         if(!crimes.includes(cr)){ a.target=null; a.state=a.carry.length?'ret':'idle'; }
-        else if(dist(a,cr)>24){ moving=!moveTo(a,cr.x,cr.y,osp,dt); }
+        else if(dist(a,cr)>24){ moving=!roadMove(a,c,cr.x,cr.y,osp,dt); }
         else { cr.progress+=dt*.85*boost; if(cr.progress>=cr.T.t){ crimeDone(cr); a.carry.push(...crimeDetainees(cr,true)); st.xp++; a.target=null; a.state='ret'; if(st.xp%5===0) toast(`${st.name} sube a nivel ${lvlOf(st)}`); } } }
-      else if(a.state==='ret'){ if(moveTo(a,c.drop.x+Math.cos(a.seed)*14,c.drop.y+Math.sin(a.seed)*10,osp,dt)){ dropAt(c,a); if(!a.carry.length) a.state='idle'; } else moving=true; }
+      else if(a.state==='ret'){ if(roadMove(a,c,c.drop.x+Math.cos(a.seed)*14,c.drop.y+Math.sin(a.seed)*10,osp,dt)){ dropAt(c,a); if(!a.carry.length) a.state='idle'; } else moving=true; }
       if(moving) st.energy=Math.max(0,st.energy-dt*.22);
       if(st.energy<=5){ st.prev='patrulla'; st.order='descanso'; if(a.target){ a.target.taken=null; a.target=null; } toast(`${st.name} está agotado y se va a descansar`,true); }
     }
@@ -550,6 +572,20 @@ function updateActors(dt){
     if(st.role==='guia'){ const tx=a.x+Math.cos(a.ang+2.3)*14, ty=a.y+Math.sin(a.ang+2.3)*14; a.dogx+=(tx-a.dogx)*Math.min(1,dt*6); a.dogy+=(ty-a.dogy)*Math.min(1,dt*6); if(Math.abs(a.dogx-tx)>200){ a.dogx=tx; a.dogy=ty; } }
   }
 }
+function roadPath(c,x,y,tx,ty){
+  const sx=v=>c.x+Math.round((v-c.x)/120)*120, sy=v=>c.y+Math.round((v-c.y)/120)*120;
+  const onV=Math.abs(x-sx(x))<6, onH=Math.abs(y-sy(y))<6; let cx=x, cy=y;
+  if(onV&&!onH) cy=sy(y); else if(onH&&!onV) cx=sx(x); else if(!onV&&!onH){ cx=sx(x); cy=sy(y); }
+  const pts=[[cx,cy]], tvx=sx(tx), thy=sy(ty);
+  if(Math.abs(tx-tvx)<6){ pts.push([tvx,cy],[tvx,ty]); } else { pts.push([cx,thy],[tx,thy]); }
+  pts.push([tx,ty]); return pts; }
+function roadMove(a,c,tx,ty,sp,dt){
+  if(!c||inPlaza(c,a.x,a.y,0)&&inPlaza(c,tx,ty,0)) return moveTo(a,tx,ty,sp,dt);
+  const key=Math.round(tx/4)+','+Math.round(ty/4);
+  if(!a.path||a.pathKey!==key){ a.path=roadPath(c,a.x,a.y,tx,ty); a.pathKey=key; }
+  while(a.path.length&&Math.hypot(a.path[0][0]-a.x,a.path[0][1]-a.y)<1.5) a.path.shift();
+  if(!a.path.length) return true;
+  moveTo(a,a.path[0][0],a.path[0][1],sp,dt); return false; }
 function wander(a,c,dt){
   const P=c.plaza;
   if(a.tx==null||(a.wait<=0&&dist(a,{x:a.tx,y:a.ty})<2)){
@@ -609,8 +645,8 @@ function update(dt){
         if(S.auto){ crimeDone(cr); const ds=crimeDetainees(cr,true,detBonus()); S.carry.push(...ds); S.stats.legal+=ds.length; addXP(8*ds.length); ds.forEach(()=>missionEvent('arrest',{city:cr.city,profile:'crimen'})); toast(`${cr.T.n}: detenido(s) con derechos leídos`); } else crimeModal(cr); break; } }
     else hintMsg='Esposas llenas: lleva a los detenidos a una comisaría'; } }
   updateActors(dt);
-  pedT-=dt; if(pedT<=0){ pedT=1; managePeds(); }
-  updatePeds(dt);
+  pedT-=dt; if(pedT<=0){ pedT=1; managePeds(); manageCars(); }
+  updatePeds(dt); updateCars(dt);
   near=null; let nd=46;
   for(const p of peds){ const d=dist(player,pedPos(p)); if(d<nd){ nd=d; near={kind:'ped',ref:p}; } }
   for(const a of actors){ if(!a.visible||a.st.order==='seguir') continue; const d=dist(player,a); if(d<nd){ nd=d; near={kind:'staff',ref:a}; } }
@@ -829,6 +865,7 @@ function draw(){
   for(const p of peds){ const q=pedPos(p); if(!vis(q.x,q.y)) continue; drawPerson(q.x,q.y,pedAng(p),p.walk,{skin:p.lk.skin,hair:p.lk.hair,long:p.lk.long,body:p.body,ring:near&&near.ref===p?'#ffc94a':null,umb:raining&&p.umb?p.body:null});
     if(p.showSus>0){ ctx.fillStyle='#ffc94a'; ctx.font='800 16px "Saira Condensed",sans-serif'; ctx.textAlign='center'; ctx.fillText('?',q.x,q.y-13); }
     else if(p.ind){ ctx.fillStyle='#ff9aa5'; ctx.beginPath(); ctx.arc(q.x,q.y-14,2.5,0,7); ctx.fill(); } }
+  for(const k of ccars){ const q=carPos(k); if(vis(q.x,q.y)) drawCar(q.x,q.y,carAng(k),{c1:k.col,c2:k.col}); }
   for(const a of actors) if(a.visible&&vis(a.x,a.y)) drawActor(a);
   for(const p of parts){ if(!vis(p.x,p.y)) continue; const k=p.t/p.life;
     if(p.k==='dust'){ ctx.fillStyle=`rgba(200,190,160,${.35*(1-k)})`; ctx.beginPath(); ctx.arc(p.x,p.y,3+k*8,0,7); ctx.fill(); }
@@ -1093,7 +1130,9 @@ function streetState(){
   const markers=[]; const st=curStep();
   if(st&&st.t==='inspect'){ const c=CBY[st.city], done=S.mis.d.done||[]; st.pts.forEach((p,i)=>{ if(!done.includes(i)) markers.push({key:st.city+i,x:c.x+p[0],y:c.y+p[1],label:st.names[i]}); }); }
   if(st&&st.t==='raid'&&!S.mis.d.spawned){ const P=stepPoint(st); markers.push({key:'raid'+st.city,x:P.x,y:P.y,label:'Registro'}); }
-  return {player:{x:player.x,y:player.y,ang:player.ang,mode:player.mode==='foot'?'foot':'car',siren:S.siren,walk:player.walk,moving:player.moving},actors:actorsS,peds:pedsS,crimes:crimesS,raiders:raidS,markers,hour:hourOfDay(),rain:weather.rain>.4};
+  const carsS=ccars.filter(k=>nearP(k)).map(k=>{ const q=carPos(k); return {id:k.uid,x:q.x,y:q.y,ang:carAng(k),col:k.col}; });
+  const nearKey=near?(near.kind==='ped'?'p'+near.ref.uid:'a'+near.ref.st.id):null;
+  return {nearKey,cars:carsS,player:{x:player.x,y:player.y,ang:player.ang,mode:player.mode==='foot'?'foot':'car',siren:S.siren,walk:player.walk,moving:player.moving},actors:actorsS,peds:pedsS,crimes:crimesS,raiders:raidS,markers,hour:hourOfDay(),rain:weather.rain>.4};
 }
 function radioModal(){
   const c=cityAt(player.x,player.y)||homeCity(); const list=crimes.filter(x=>x.city===c.id).sort((p,q)=>dist(p,player)-dist(q,player));
