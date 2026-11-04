@@ -94,7 +94,7 @@
       <path d="M24 92A50 50 0 1 1 96 92" fill="none" stroke="#1d3466" stroke-width="9" stroke-linecap="round"/>
       <path id="speedArc" d="M24 92A50 50 0 1 1 96 92" fill="none" stroke="url(#spg)" stroke-width="9" stroke-linecap="round" stroke-dasharray="0 400"/>
       <defs><linearGradient id="spg" x1="0" x2="1"><stop offset="0" stop-color="#3d8bff"/><stop offset=".7" stop-color="#7fd0ff"/><stop offset="1" stop-color="#ff3b4e"/></linearGradient></defs></svg>
-      <b id="speedN">0</b><small>km/h</small></div>
+      <b id="speedN">0</b><small>km/h</small><em class="gear" id="gearN">N</em></div>
     <div class="dbtns">
       <button id="bRadio"><span class="ic" data-ico="radio"></span><span>Radio</span></button>
       <button id="bSiren"><span class="ic" data-ico="siren"></span><span>Sirena</span></button>
@@ -103,6 +103,17 @@
       <button id="b3d"><span class="ic" data-ico="cam"></span><span id="b3dTxt">Vista 2D</span></button>
     </div>
     <button class="ctx" id="ctx" hidden><b id="ctxL">Acción</b><small id="ctxS"></small><kbd>E</kbd></button>
+    <div class="wheel" id="wheel" hidden aria-label="Volante: arrastra para girar"><svg viewBox="0 0 200 200" aria-hidden="true">
+      <defs><radialGradient id="wg" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#3a3f4a"/><stop offset="1" stop-color="#111318"/></radialGradient></defs>
+      <circle cx="100" cy="100" r="88" fill="none" stroke="url(#wg)" stroke-width="22"/><circle cx="100" cy="100" r="88" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+      <path d="M100 100 L22 112 M100 100 L178 112 M100 100 L100 186" stroke="#22262e" stroke-width="18" stroke-linecap="round"/>
+      <circle cx="100" cy="100" r="30" fill="#1a1d24" stroke="#3a3f4a" stroke-width="3"/><path d="M100 82l13 5v9c0 9-6 15-13 18-7-3-13-9-13-18v-9z" fill="#c99a1c"/>
+      <rect x="94" y="10" width="12" height="8" rx="2" fill="#ffc94a"/></svg></div>
+    <div class="pedals" id="pedals" hidden><button id="brkP" aria-label="Freno"><span>FRENO</span></button><button id="gasP" aria-label="Acelerador"><span>GAS</span></button></div>
+    <button class="runbtn" id="runB" hidden aria-label="Correr">Correr</button>
+    <button class="cambtn" id="camB" aria-label="Cambiar cámara"><span class="ic" data-ico="cam"></span><span id="camT">Cámara</span></button>
+    <div class="pcard" id="pcard" hidden><div class="pface" id="pcFace"></div><div><b id="pcName"></b><span id="pcLine"></span></div></div>
+    <div class="objp" id="objp" hidden><h4 id="opT"></h4><ol id="opL"></ol></div>
     <div class="obj" id="obj" hidden><span class="arr" id="objA">▲</span><div><b id="objT">Objetivo</b><small id="objD"></small></div></div>
     <div class="joy" id="joy" hidden><i id="joyK"></i></div>
     <button class="menubtn" id="bMenu" aria-label="Menú"><span class="ic" data-ico="map"></span><span>Menú</span></button>
@@ -163,12 +174,12 @@
   <div class="mbody">
     <div>Diriges una red de comisarías por toda España. El mapa es abierto: viaja por autovías, abre comisarías en otras ciudades y resuelve casos. No hay niveles de mapa: tú subes de nivel como jefe.</div>
     <ul class="log">
-      <li><b>Moverte:</b> <kbd>WASD</kbd> o flechas. En el móvil, el joystick de la izquierda. A pie vas hacia donde empujas; arrastra con el ratón o con el dedo en la parte derecha para girar la cámara.</li>
-      <li><b>Conducir:</b> <kbd>W</kbd> acelera, <kbd>S</kbd> frena o da marcha atrás, <kbd>A</kbd>/<kbd>D</kbd> giran. Puedes salir de la ciudad por las autovías hasta cualquier otra.</li>
-      <li><b>Un solo botón para actuar:</b> el botón grande de abajo a la derecha (o <kbd>E</kbd> / <kbd>Espacio</kbd>) cambia según lo que tengas cerca: <i>¡Alto, policía!</i>, <i>Dar el alto</i>, <i>Subir al coche</i>, <i>Bajar del coche</i>, <i>Entregar detenidos</i>, <i>Entrar en comisaría</i>.</li>
-      <li>Arriba, la <b>brújula dorada</b> señala tu objetivo y la distancia: el aviso más cercano o el paso de la misión.</li>
+      <li><b>A pie:</b> <kbd>WASD</kbd> o el joystick. Mantén <kbd>Mayús</kbd> (o el botón <i>Correr</i>) para correr. Arrastra en la pantalla para mirar alrededor.</li>
+      <li><b>Conducir:</b> gira el <b>volante</b> de la izquierda con el dedo o el ratón y usa los pedales <b>GAS</b> y <b>FRENO</b>. Con teclado: <kbd>W</kbd> acelera, <kbd>S</kbd> frena y da marcha atrás, <kbd>A</kbd>/<kbd>D</kbd> giran el volante. <kbd>C</kbd> cambia la cámara (detrás, cerca o interior).</li>
+      <li><b>Tu compañero</b> patrulla contigo: va de copiloto, se baja contigo, te avisa por radio y persigue a los sospechosos que huyen.</li>
+      <li><b>Un solo botón para actuar</b> (<kbd>E</kbd>): <i>¡Alto, policía!</i>, <i>Dar el alto</i>, <i>Hablar</i>, <i>Subir/Bajar del coche</i>, <i>Entregar detenidos</i> o <i>Entrar en comisaría</i>.</li>
+      <li>La <b>brújula dorada</b> señala tu objetivo y el panel de la derecha muestra los pasos de la misión.</li>
       <li>Al dar el alto, el juego marca el <b>paso recomendado</b>. Cachear sin indicios o detener sin base legal es ilegal y el juez lo anula.</li>
-      <li>Lleva a los detenidos al círculo azul de <b>ENTREGA</b> de tu comisaría. Desde el <b>Menú</b> gestionas calabozos, interrogatorios, garaje, personal y misiones.</li>
     </ul>
     <div class="note">Los casos, personajes y emblemas son ficticios. Las referencias legales están simplificadas para el juego. La partida se guarda en este navegador.</div>
   </div>

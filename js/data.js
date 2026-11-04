@@ -29,11 +29,11 @@ const MOUNTAINS = [
 ];
 
 const CITIES = [
-  {id:'madrid',n:'Madrid',lo:-3.70,la:40.42,r:520,cost:0,hue:215},
-  {id:'barcelona',n:'Barcelona',lo:2.17,la:41.39,r:420,cost:4000,hue:20},
-  {id:'valencia',n:'Valencia',lo:-0.38,la:39.47,r:400,cost:3000,hue:35},
-  {id:'sevilla',n:'Sevilla',lo:-5.98,la:37.39,r:380,cost:2200,hue:45},
-  {id:'zaragoza',n:'Zaragoza',lo:-0.88,la:41.65,r:300,cost:1800,hue:200},
+  {id:'madrid',n:'Madrid',lo:-3.70,la:40.42,r:700,cost:0,hue:215},
+  {id:'barcelona',n:'Barcelona',lo:2.17,la:41.39,r:540,cost:4000,hue:20},
+  {id:'valencia',n:'Valencia',lo:-0.38,la:39.47,r:500,cost:3000,hue:35},
+  {id:'sevilla',n:'Sevilla',lo:-5.98,la:37.39,r:470,cost:2200,hue:45},
+  {id:'zaragoza',n:'Zaragoza',lo:-0.88,la:41.65,r:380,cost:1800,hue:200},
   {id:'bilbao',n:'Bilbao',lo:-2.93,la:43.26,r:300,cost:2000,hue:160},
   {id:'coruna',n:'A Coruña',lo:-8.41,la:43.36,r:280,cost:1800,hue:190},
   {id:'vigo',n:'Vigo',lo:-8.72,la:42.24,r:260,cost:2000,hue:175},
@@ -48,16 +48,35 @@ const CITIES = [
   {id:'alicante',n:'Alicante',lo:-0.48,la:38.35,r:300,cost:2000,hue:200},
   {id:'granada',n:'Granada',lo:-3.60,la:37.18,r:280,cost:1700,hue:350},
   {id:'palma',n:'Palma',lo:2.65,la:39.57,r:260,cost:3000,hue:185},
+  {id:'toledo',n:'Toledo',lo:-4.02,la:39.86,r:250,cost:1400,hue:40},
+  {id:'valladolid',n:'Valladolid',lo:-4.72,la:41.65,r:320,cost:1700,hue:30},
+  {id:'salamanca',n:'Salamanca',lo:-5.66,la:40.97,r:270,cost:1500,hue:45},
+  {id:'burgos',n:'Burgos',lo:-3.70,la:42.34,r:260,cost:1500,hue:200},
+  {id:'leon',n:'León',lo:-5.57,la:42.60,r:250,cost:1500,hue:15},
+  {id:'oviedo',n:'Oviedo',lo:-5.84,la:43.36,r:260,cost:1700,hue:160},
+  {id:'santander',n:'Santander',lo:-3.80,la:43.46,r:250,cost:1700,hue:190},
+  {id:'pamplona',n:'Pamplona',lo:-1.64,la:42.81,r:260,cost:1700,hue:350},
+  {id:'caceres',n:'Cáceres',lo:-6.37,la:39.47,r:240,cost:1300,hue:35},
+  {id:'badajoz',n:'Badajoz',lo:-6.97,la:38.88,r:250,cost:1400,hue:50},
+  {id:'cordoba',n:'Córdoba',lo:-4.78,la:37.88,r:300,cost:1600,hue:40},
+  {id:'jaen',n:'Jaén',lo:-3.79,la:37.77,r:230,cost:1300,hue:60},
+  {id:'tarragona',n:'Tarragona',lo:1.25,la:41.12,r:260,cost:1800,hue:25},
+  {id:'castellon',n:'Castellón',lo:-0.05,la:39.99,r:240,cost:1500,hue:210},
 ];
 
 // Autovías principales [ciudad A, ciudad B, rótulo]
 const HIGHWAYS = [
-  ['madrid','zaragoza','A-2'],['zaragoza','barcelona','AP-2'],['madrid','valencia','A-3'],['valencia','barcelona','AP-7'],
+  ['madrid','zaragoza','A-2'],['zaragoza','barcelona','AP-2'],['madrid','valencia','A-3'],
   ['valencia','alicante','AP-7'],['alicante','murcia','A-7'],['murcia','almeria','A-7'],['almeria','granada','A-92'],
-  ['granada','malaga','A-45'],['madrid','granada','A-44'],['madrid','sevilla','A-4'],['sevilla','huelva','A-49'],
+  ['granada','malaga','A-45'],['sevilla','huelva','A-49'],
   ['sevilla','cadiz','AP-4'],['cadiz','sanlucar',''],['sanlucar','sevilla',''],['cadiz','algeciras','A-48'],
   ['algeciras','marbella','AP-7'],['marbella','malaga','AP-7'],['malaga','sevilla','A-92'],['madrid','bilbao','A-1'],
-  ['bilbao','zaragoza','AP-68'],['madrid','coruna','A-6'],['coruna','vigo','AP-9'],['murcia','madrid','A-30'],
+  ['bilbao','zaragoza','AP-68'],['coruna','vigo','AP-9'],['murcia','madrid','A-30'],
+  ['madrid','toledo','A-42'],['madrid','valladolid','A-6'],['valladolid','leon','A-60'],['leon','oviedo','AP-66'],['leon','coruna','A-6'],
+  ['valladolid','burgos','A-62'],['burgos','bilbao','AP-68'],['santander','bilbao','A-8'],['oviedo','santander','A-8'],['burgos','santander','A-67'],
+  ['valladolid','salamanca','A-62'],['salamanca','caceres','A-66'],['caceres','badajoz','A-58'],['madrid','caceres','A-5'],['badajoz','sevilla','A-66'],
+  ['cordoba','sevilla','A-4'],['madrid','cordoba','A-4'],['cordoba','jaen','A-316'],['jaen','granada','A-44'],
+  ['zaragoza','pamplona','AP-15'],['pamplona','bilbao','A-15'],['barcelona','tarragona','AP-7'],['tarragona','castellon','AP-7'],['castellon','valencia','AP-7'],
 ];
 
 const UPG = {
@@ -132,6 +151,30 @@ const TIPS = [
 ];
 
 const MIS = [
+  {id:'s1',rl:1,art:'compacto',n:'El tirón de la plaza',zona:'Madrid',pre:[],rw:900,rep:4,d:'Le han arrancado el bolso a una vecina. Habla con ella, busca al autor por su descripción y llévalo a comisaría.',steps:[
+    {t:'call',txt:'Central: «Tirón en la plaza Mayor. La víctima espera junto a la fuente»'},
+    {t:'talk',city:'madrid',off:[-240,-240],who:'Carmen Ruiz (víctima)',look:{body:'#7a4a8c',skin:'#f3d0b0',hair:'#8a8a8a',long:true},
+      lines:['¡Agente, gracias por venir! Un chico me ha arrancado el bolso y ha salido corriendo hacia el este.','Llevaba una <b>sudadera roja</b> y el pelo muy corto. No tendría más de 25 años.'],
+      ask:[['¿Qué había en el bolso?','La cartera, el móvil y las llaves de casa. Es un bolso marrón de piel.'],['¿Está usted herida?','Me he raspado la mano al caer, pero estoy bien. Por favor, encuéntrelo.']],
+      txt:'Habla con la víctima en la plaza'},
+    {t:'find',city:'madrid',off:[120,-240],desc:'sudadera roja, pelo corto',look:{body:'#c0202a',skin:'#e6b48e',hair:'#16100c'},flee:true,item:'un bolso marrón de piel con la cartera de Carmen Ruiz',crime:'Hurto con tirón',art:'art. 234 CP',txt:'Busca al sospechoso: sudadera roja y pelo corto'},
+    {t:'deliver',txt:'Lleva al detenido a los calabozos de una comisaría'},
+    {t:'interrogate',txt:'Interroga al detenido con su abogado presente'}]},
+  {id:'s2',rl:2,art:'berlina',n:'Conductor ebrio en la A-42',zona:'Madrid · Toledo',pre:['s1'],rw:1300,rep:4,d:'Un coche circula haciendo eses por la autovía de Toledo. Detenlo antes de que cause un accidente.',steps:[
+    {t:'call',txt:'Central: «Vehículo circulando en zigzag por la A-42 hacia Toledo»'},
+    {t:'drunk',seg:['madrid','toledo'],txt:'Alcanza al coche en la A-42 y oblígale a detenerse (ponte pegado detrás)'},
+    {t:'test',txt:'Haz la prueba de alcoholemia al conductor'},
+    {t:'deliver',txt:'Lleva al detenido a comisaría'}]},
+  {id:'s3',rl:3,art:'suv',n:'Atraco a la joyería',zona:'Toledo',pre:['s1'],rw:2200,rep:5,d:'Han atracado una joyería del casco histórico. Revisa las cámaras, habla con el dueño y captura a los atracadores.',steps:[
+    {t:'goto',city:'toledo',txt:'Viaja a Toledo por la A-42'},
+    {t:'talk',city:'toledo',off:[-120,-120],who:'Julián Ortega (joyero)',look:{body:'#3a3f4a',skin:'#c98e66',hair:'#5a3820'},
+      lines:['Eran dos. Uno llevaba un <b>abrigo negro</b> y el otro una <b>gorra verde</b>.','Se han llevado tres relojes y un collar. Se fueron andando hacia el sur, sin prisa, para no llamar la atención.'],
+      ask:[['¿Iban armados?','Uno enseñó una navaja. No llegó a usarla.'],['¿Tiene cámaras?','Sí, en la puerta. Las grabaciones están en la tienda de al lado.']],txt:'Habla con el joyero'},
+    {t:'inspect',city:'toledo',pts:[[-40,-120]],names:['Grabaciones de la cámara'],txt:'Revisa las grabaciones de seguridad'},
+    {t:'find',city:'toledo',off:[0,120],desc:'abrigo negro',look:{body:'#141414',skin:'#a46a45',hair:'#2f1d12'},flee:true,item:'tres relojes de oro y una navaja',crime:'Robo con intimidación',art:'art. 242 CP',txt:'Busca al primer atracador: abrigo negro'},
+    {t:'find',city:'toledo',off:[120,60],desc:'gorra verde',look:{body:'#3a5a3a',skin:'#e6b48e',hair:'#16100c'},flee:true,item:'un collar de oro',crime:'Robo con intimidación',art:'art. 242 CP',txt:'Busca al segundo atracador: gorra verde'},
+    {t:'deliver',txt:'Lleva a los detenidos a los calabozos'},
+    {t:'court',n:1,txt:'Pasa a un atracador a disposición judicial'}]},
   {id:'m1',rl:1,art:'compacto',n:'Primer servicio',zona:'Madrid',pre:[],rw:500,rep:3,d:'Demuestra que sabes detener respetando la ley.',steps:[
     {t:'arrest',city:'madrid',n:2,txt:'Haz 2 detenciones legales en Madrid, leyendo los derechos'},
     {t:'court',n:1,txt:'Pasa a un detenido a disposición judicial desde el Centro de mando'}]},

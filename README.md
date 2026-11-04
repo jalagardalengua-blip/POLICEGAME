@@ -45,20 +45,25 @@ Cada día se pagan las nóminas y el mantenimiento de la flota.
 
 | Acción | Teclado | Móvil |
 |---|---|---|
-| Caminar (hacia donde empujas) | WASD o flechas | Joystick a la izquierda |
-| Girar la cámara a pie | Arrastrar con el ratón, Q / R | Arrastrar en la mitad derecha |
-| Conducir | W acelera, S frena o marcha atrás, A/D giran | Joystick |
-| **Botón de acción** (cambia según lo que tengas cerca: ¡Alto, policía!, Dar el alto, Subir/Bajar del coche, Entregar detenidos, Entrar en comisaría, Dar órdenes) | E o Espacio | Botón grande abajo a la derecha |
-| Subir o bajar del coche | F | Botón de acción |
+| Caminar / correr | WASD · Mayús para correr | Joystick a la izquierda · botón Correr |
+| Mirar alrededor | Arrastrar con el ratón | Arrastrar en la mitad derecha |
+| **Conducir** | W acelerador, S freno y marcha atrás, A/D volante | **Volante** táctil a la izquierda y pedales **GAS** / **FRENO** |
+| Cambiar cámara (detrás, cerca, interior) | C | Botón Cámara |
+| **Botón de acción** (¡Alto, policía!, Dar el alto, Hablar, Subir/Bajar del coche, Entregar detenidos, Entrar en comisaría) | E o Espacio | Botón grande |
 | Radio (pedir tu coche, refuerzos, control de carretera) | Botón Radio | Botón Radio |
-| Menú (mapa, comisaría, garaje, personal, calabozos, misiones) | Botón Menú | Botón Menú |
-| Vista 3D o mapa 2D | V | Botón Mapa 2D |
+| Menú | Botón Menú | Botón Menú |
 
-El mundo 3D cubre toda España: sales de la ciudad por las autovías y llegas a cualquier otra. Te bajas del coche donde quieras, lo dejas aparcado y vuelves a él (o lo pides por radio). La brújula dorada de arriba señala siempre tu objetivo.
+Velocidades reales: se camina a unos 12 km/h, se corre a 20 y el coche llega a unos 55 km/h en ciudad y 120 en autovía. **Tu compañero** patrulla contigo: va de copiloto, se baja contigo, te avisa por radio y persigue a quien huya.
+
+### Misiones completas
+
+- **El tirón de la plaza** (Madrid): aviso de la central → hablar con la víctima → buscar al sospechoso por su descripción → persecución a pie → detención legal → entrega → interrogatorio.
+- **Conductor ebrio en la A-42**: alcanzar al coche que va haciendo eses → prueba de alcoholemia → detención (art. 379.2 CP) → entrega.
+- **Atraco a la joyería** (Toledo): viajar a Toledo → hablar con el joyero → revisar las cámaras → capturar a los dos atracadores → juzgado.
 
 ## Qué hay en el juego
 
-- **Mapa de España**: 19 ciudades, autovías con su nombre (A-1, A-4, AP-7…), ríos, montañas con nieve, campos, olivares, viñedos, pueblos, playas, Baleares, Portugal, Francia y el norte de África.
+- **Mapa de España**: 33 ciudades (con Toledo, Valladolid, Salamanca, Burgos, León, Oviedo, Santander, Pamplona, Cáceres, Badajoz, Córdoba, Jaén, Tarragona y Castellón), pueblos junto a las autovías, autovías con su nombre (A-1, A-4, AP-7…), ríos, montañas con nieve, campos, olivares, viñedos, pueblos, playas, Baleares, Portugal, Francia y el norte de África.
 - **Detenciones legales**: identificar, preguntar, pasar al perro, cachear (solo con indicios), proponer sanciones y detener leyendo los derechos. Si te saltas la ley, el juez anula el caso y pierdes reputación.
 - **Custodia**: plazo de 72 horas, abogado de oficio, interrogatorios por turnos y pruebas que suben o bajan. Al final, el juez condena o deja en libertad.
 - **Plantilla con personajes**: agentes, detectives, analistas, guías caninos con su perro y jefes de turno. Cada uno tiene nombre, aspecto, nivel, experiencia y energía. Les das órdenes: patrullar, acompañarte, guardia en calabozos, descansar o trasladarse a otra comisaría.
