@@ -47,7 +47,7 @@ Cada día se pagan las nóminas y el mantenimiento de la flota.
 |---|---|---|
 | Caminar / correr | WASD · Mayús para correr | Joystick a la izquierda · botón Correr |
 | Mirar alrededor | Arrastrar con el ratón | Arrastrar en la mitad derecha |
-| **Conducir** | W acelerador, S freno y marcha atrás, A/D volante | **Volante** táctil a la izquierda y pedales **GAS** / **FRENO** |
+| **Conducir** | W acelerador, S freno y marcha atrás, A/D volante, **Mayús freno de mano** | **Volante** táctil a la izquierda y pedales **GAS** / **FRENO** (los dos a la vez: freno de mano) |
 | Cambiar cámara (detrás, cerca, interior) | C | Botón Cámara |
 | **Botón de acción** (¡Alto, policía!, Dar el alto, Hablar, Subir/Bajar del coche, Entregar detenidos, Entrar en comisaría) | E o Espacio | Botón grande |
 | Radio (pedir tu coche, refuerzos, control de carretera) | Botón Radio | Botón Radio |
@@ -70,6 +70,8 @@ Velocidades reales: se camina a unos 12 km/h, se corre a 20 y el coche llega a u
 - **Comisarías ampliables**: tres niveles por comisaría, coches patrulla, garaje y helipuerto.
 - **11 misiones** encadenadas sobre narcotráfico y crimen organizado (ficticias).
 - **Gráficos**: edificios en 2,5D con sombras, tejados de teja en el sur, piscinas en Marbella, ventanas que se encienden de noche, faros, sirenas, lluvia, oleaje y espuma en la costa.
+- **Personas realistas** con captura de movimiento: andan, trotan y esprintan según su velocidad, se sientan en el interrogatorio, conducen, hablan por teléfono o se cruzan de brazos. Uniforme, traje, ropa de calle y mono de preso pintados sobre el cuerpo. Modelos CC0 de Quaternius (inventario y licencias en `docs/RECURSOS.md`).
+- **Conducción con inercia**: el coche derrapa si giras fuerte a mucha velocidad, desliza con el freno de mano y la carrocería cabecea al frenar y se inclina en las curvas.
 - **Guardado automático** en el navegador.
 
 ## Estructura del proyecto
@@ -80,6 +82,8 @@ css/style.css           Interfaz (HUD, paneles, fichas)
 js/data.js              Contenido: geografía, ciudades, autovías, misiones, personal, delitos
 js/game.js              Motor: simulación, IA, mapa 2D, interfaz
 js/hub3d.js             Motor 3D: comisaría, interrogatorio, calabozos, calle y miniaturas (Three.js)
+js/gl3d.js              Personas realistas con animación (GLTF), ropa pintada por zonas
+modelos/                Cuerpos, peinados y animaciones (Quaternius, CC0) — ver docs/RECURSOS.md
 js/icons.js             Iconos e ilustraciones SVG
 js/audio.js             Sonido sintetizado con Web Audio (sin archivos)
 js/vendor/three.min.js  Three.js r128 (licencia MIT, ver THREE-LICENSE.txt)

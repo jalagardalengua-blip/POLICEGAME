@@ -54,7 +54,8 @@ Escena 3D en tiempo real con cámara sobre el hombro del jefe, al estilo de los 
 - [x] Tráfico civil, farolas y agentes que circulan por las calles
 - [x] Persecuciones en coche con cuenta atrás
 - [x] Pantallas de garaje, personal, gestión de comisaría, misiones y perfil
-- [ ] Modelos 3D más detallados (GLTF) para coches, personajes y edificios
+- [x] Personajes realistas en GLTF con animación (Quaternius, CC0)
+- [ ] Coches, mobiliario urbano y edificios en GLTF (ver `docs/RECURSOS.md`)
 - [x] Patrulla en 3D por las calles
 - [x] Interrogatorio y calabozos en 3D
 - [x] Tienda de vehículos con efectos en el juego
