@@ -731,15 +731,30 @@ function update(dt){
     if(wheelIn==null&&joy) st=Math.max(-1,Math.min(1,dx*1.2));
     player.steer=wheelIn!=null?st:player.steer+(st-player.steer)*Math.min(1,dt*(st?3.2:4.5));
     const vmax=(here?78:172)*(1+.08*U('mot'))*(S.siren?1.12:1)*(player.mode==='boat'?.8:1);
-    if(thr>0&&player.spd>=-1) player.spd+=(thr*(vmax-player.spd)*.42+thr*3)*dt;
-    if(brk>0){ if(player.spd>1) player.spd-=105*brk*dt; else player.spd=Math.max(-24,player.spd-16*brk*dt); }
-    if(!thr&&!brk) player.spd-=player.spd*.22*dt+(Math.abs(player.spd)<1.5?player.spd:0);
-    if(thr>0&&player.spd<0) player.spd=Math.min(0,player.spd+60*dt);
-    player.gear=player.spd<-.5?'R':Math.abs(player.spd)<.5?'N':'D';
-    const eff=player.steer*.62/(1+Math.abs(player.spd)/85); player.ang+=player.spd/13*Math.tan(eff)*dt;
-    if(Math.abs(player.spd)>.3){ player.moving=true;
-      const nx=player.x+Math.cos(player.ang)*player.spd*dt, ny=player.y+Math.sin(player.ang)*player.spd*dt;
-      if(ok(nx,ny)){ player.x=nx; player.y=ny; } else { if(Math.abs(player.spd)>25){ AU()&&AU().fail(); camShake=.35; toast('¡Golpe! Conduce con cuidado',true); } player.spd*=-.25; blocked(); } }
+    // física con inercia: velocidad longitudinal (vf) y lateral (vl) respecto al morro.
+    // Freno de mano: Mayús, o los dos pedales a la vez en pantalla táctil.
+    const hb=player.mode!=='boat'&&(keys.has('shift')||(touchDrive.gas&&touchDrive.brake));
+    const fx=Math.cos(player.ang), fy=Math.sin(player.ang); let vf=player.vx*fx+player.vy*fy, vl=-player.vx*fy+player.vy*fx; const vf0=vf;
+    const gas=hb?0:thr, brake=hb?0:brk;
+    if(gas>0&&vf>=-1) vf+=(gas*(vmax-vf)*.42+gas*3)*dt*(vf<vmax*.35?1.25:1);
+    if(brake>0){ if(vf>1) vf-=105*brake*dt; else vf=Math.max(-24,vf-16*brake*dt); }
+    if(!gas&&!brake) vf-=vf*.22*dt+(Math.abs(vf)<1.5&&!hb?vf:0);
+    if(gas>0&&vf<0) vf=Math.min(0,vf+60*dt);
+    if(hb&&Math.abs(vf)>.5) vf-=Math.sign(vf)*Math.min(Math.abs(vf),20*dt);
+    const sp=Math.abs(vf), grip=player.mode==='boat'?2.2:hb?1.4:sp>55&&Math.abs(player.steer)>.65?4.2:9.5;
+    vl*=Math.exp(-grip*dt);
+    const eff=player.steer*.62/(1+sp/85), yaw=vf/13*Math.tan(eff)*(hb?1.45:1)+(hb?vl*.004:0);
+    player.ang+=yaw*dt;
+    player.vx=vf*fx-vl*fy; player.vy=vf*fy+vl*fx; player.spd=vf; player.slip=vl;
+    player.gear=vf<-.5?'R':Math.abs(vf)<.5?'N':'D';
+    // inclinación de la carrocería: cabeceo al acelerar o frenar y balanceo en las curvas
+    const af=(vf-vf0)/Math.max(dt,1e-3), lat=vf*yaw;
+    player.pitch=(player.pitch||0)+((Math.max(-.055,Math.min(.04,af*.0011)))-(player.pitch||0))*Math.min(1,dt*5);
+    player.roll=(player.roll||0)+((Math.max(-.065,Math.min(.065,-lat*.00055)))-(player.roll||0))*Math.min(1,dt*4);
+    if(Math.hypot(player.vx,player.vy)>.3){ player.moving=true;
+      const nx=player.x+player.vx*dt, ny=player.y+player.vy*dt;
+      if(ok(nx,ny)){ player.x=nx; player.y=ny; } else { if(Math.hypot(player.vx,player.vy)>25){ AU()&&AU().fail(); camShake=.35; toast('¡Golpe! Conduce con cuidado',true); } player.vx*=-.25; player.vy*=-.25; player.spd*=-.25; blocked(); } }
+    else { player.vx=player.vy=0; }
     player.camYaw=player.ang;
   } else if(street3d){
     // a pie: te mueves hacia donde empujas, según la cámara
@@ -750,7 +765,7 @@ function update(dt){
       const nx=player.x+mx/l*player.spd*dt, ny=player.y+my/l*player.spd*dt;
       if(ok(nx,player.y)) player.x=nx; else blocked(); if(ok(player.x,ny)) player.y=ny; else blocked();
       if(-dy>.3&&!camDrag){ let d=player.ang-yaw; d=Math.atan2(Math.sin(d),Math.cos(d)); player.camYaw=yaw+d*Math.min(1,dt*1.6); } }
-    else player.spd=0;
+    else { player.spd=0; player.vx=player.vy=0; }
   } else {
     player.spd=(dx||dy)?pSpeed*Math.min(1,Math.hypot(dx,dy)):0;
     if(dx||dy){ player.ang=Math.atan2(dy,dx); player.walk+=dt*10; player.moving=true;
@@ -1304,7 +1319,7 @@ function updateStreet(){
   if(view!=='patrol') return;
   const want=S.view3d&&window.PE_HUB&&PE_HUB.available();
   if(want){
-    if(!street3d){ if(!PE_HUB.openStreet(worldData())){ S.view3d=false; return; } street3d=true; document.body.classList.add('street'); C.style.visibility='hidden'; player.spd=0; player.camYaw=player.ang; }
+    if(!street3d){ if(!PE_HUB.openStreet(worldData())){ S.view3d=false; return; } street3d=true; document.body.classList.add('street'); C.style.visibility='hidden'; player.spd=0; player.vx=player.vy=0; player.camYaw=player.ang; }
     const c=CITIES.find(k=>Math.hypot(player.x-k.x,player.y-k.y)<k.r+700)||null;
     PE_HUB.setCity(c?cityData(c):null); PE_HUB.syncStreet(streetState()); return; }
   if(street3d){ street3d=false; document.body.classList.remove('street'); if(window.PE_HUB) PE_HUB.close(); C.style.visibility='visible'; }
@@ -1328,7 +1343,7 @@ function streetState(){
   const pa=partnerActor(), PR=pa&&ROLES[pa.st.role];
   const npcs=npcTalk?[{id:npcTalk.uid,x:npcTalk.x,y:npcTalk.y,ang:Math.atan2(player.y-npcTalk.y,player.x-npcTalk.x),look:npcTalk.look,label:npcTalk.who.split(' (')[0]}]:[];
   if(misPed) { const q=pedsS.find(k=>k.id===misPed.uid); if(q){ q.target=true; q.run=!!misPed.fleeing; } }
-  return {npcs,camMode,shake:camShake,partnerLook:player.inCar&&pa?{body:PR.body,skin:pa.st.look.skin,hair:pa.st.look.hair,long:pa.st.look.long,cap:PR.hat,vest:'#0c0f16',legs:'#141a28'}:null,camD:camD*.25,camYaw:player.camYaw,camPitch:camPitch,parked:!player.inCar&&S.carPos?S.carPos:null,roadblock,nearKey,cars:carsS,player:{x:player.x,y:player.y,ang:player.ang,mode:player.mode,siren:S.siren,walk:player.walk,moving:player.moving,spd:player.spd,steer:player.steer},actors:actorsS,peds:pedsS,crimes:crimesS,raiders:raidS,markers,hour:hourOfDay(),rain:weather.rain>.4};
+  return {npcs,camMode,shake:camShake,partnerLook:player.inCar&&pa?{body:PR.body,skin:pa.st.look.skin,hair:pa.st.look.hair,long:pa.st.look.long,cap:PR.hat,vest:'#0c0f16',legs:'#141a28'}:null,camD:camD*.25,camYaw:player.camYaw,camPitch:camPitch,parked:!player.inCar&&S.carPos?S.carPos:null,roadblock,nearKey,cars:carsS,player:{x:player.x,y:player.y,ang:player.ang,mode:player.mode,siren:S.siren,walk:player.walk,moving:player.moving,spd:player.spd,steer:player.steer,roll:player.roll||0,pitch:player.pitch||0,slip:player.slip||0},actors:actorsS,peds:pedsS,crimes:crimesS,raiders:raidS,markers,hour:hourOfDay(),rain:weather.rain>.4};
 }
 function radioModal(){
   AU()&&AU().radio(); const c=cityAt(player.x,player.y)||homeCity(); const list=crimes.filter(x=>x.city===c.id).sort((p,q)=>dist(p,player)-dist(q,player));
@@ -1812,10 +1827,10 @@ $('fleetUp').onclick=()=>{ const c=homeCity(), cost=lvlCost(c.id); if(S.money>=c
 $('mapc').addEventListener('click',mapClick);
 function toggle3D(){ S.view3d=!S.view3d; $('b3dTxt').textContent=S.view3d?'Mapa 2D':'Vista 3D'; if(!S.view3d&&street3d){ street3d=false; document.body.classList.remove('street'); PE_HUB.close(); C.style.visibility='visible'; } toast(S.view3d?'Vista 3D en las ciudades':'Vista de mapa'); saveLocal(); }
 function exitCar(){ if(!player.inCar) return; if(!land(player.x,player.y)){ toast('No puedes bajarte en el mar',true); return; }
-  S.carPos={x:player.x,y:player.y,ang:player.ang}; player.inCar=false; player.spd=0;
+  S.carPos={x:player.x,y:player.y,ang:player.ang}; player.inCar=false; player.spd=0; player.vx=player.vy=0;
   const sx=Math.cos(player.ang+Math.PI/2)*16, sy=Math.sin(player.ang+Math.PI/2)*16; if(land(player.x+sx,player.y+sy)){ player.x+=sx; player.y+=sy; }
   player.camYaw=player.ang; toast('Bajas del coche. Pulsa el botón de acción junto a él para volver a subir'); }
-function enterCar(){ if(!S.carPos) return; player.x=S.carPos.x; player.y=S.carPos.y; player.ang=S.carPos.ang; player.camYaw=player.ang; S.carPos=null; player.inCar=true; player.spd=0; toast('Subes al coche patrulla'); }
+function enterCar(){ if(!S.carPos) return; player.x=S.carPos.x; player.y=S.carPos.y; player.ang=S.carPos.ang; player.camYaw=player.ang; S.carPos=null; player.inCar=true; player.spd=0; player.vx=player.vy=0; toast('Subes al coche patrulla'); }
 function callCar(){ if(player.inCar){ toast('Ya vas en el coche'); return; } const a=player.ang; let x=player.x+Math.cos(a)*30, y=player.y+Math.sin(a)*30; if(!land(x,y)||!streetOK(x,y)){ x=player.x; y=player.y; }
   S.carPos={x,y,ang:a}; toast('Un compañero te acerca el coche patrulla'); }
 function toggleVeh(){ if(player.inCar) exitCar(); else if(S.carPos&&dist(player,S.carPos)<60) enterCar(); else toast(S.carPos?'Tu coche está lejos. Pídelo por radio o acércate a él':'Pide tu coche por radio',true); }
